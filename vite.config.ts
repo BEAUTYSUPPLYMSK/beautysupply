@@ -9,6 +9,9 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Relative base so the single-file build works on GitHub Pages
+  // both at the domain root and in a /beautysupply/ subpath.
+  base: './',
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {

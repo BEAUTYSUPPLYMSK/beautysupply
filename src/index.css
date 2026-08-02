@@ -48,13 +48,6 @@ body {
   -webkit-backdrop-filter: blur(12px);
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, var(--color-rose-gold) 0%, var(--color-rose-gold-light) 50%, var(--color-blush) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .shine-effect {
   position: relative;
   overflow: hidden;
@@ -86,11 +79,6 @@ body {
   50% { transform: translate3d(0, -20px, 0) rotate(5deg); }
 }
 
-@keyframes marquee {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
-}
-
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -99,11 +87,6 @@ body {
 @keyframes slide-up {
   from { opacity: 0; transform: translate3d(0, 0.5rem, 0); }
   to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-  will-change: transform;
 }
 
 .animate-float {
@@ -127,16 +110,6 @@ body {
 
 .animate-slide-up {
   animation: slide-up 0.25s ease-out both;
-}
-
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out;
-}
-
-.accordion-content.open {
-  max-height: 500px;
 }
 
 .line-clamp-2 {

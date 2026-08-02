@@ -3,7 +3,7 @@
 ## 1. Профиль основных конкурентов на рынке РФ (2025–2026)
 
 ### А. «Золотое Яблоко» (Сетевой гигант)
-- **Формат**: Премиальное бьюти-пространство и крупнейший онлайн-ритейлер [1](https://guruseller.ru/zolotoe-yabloko-dlya-sellerov-usловиya-vkhod-i-chto-prodayotsya/).
+- **Формат**: Премиальное бьюти-пространство и крупнейший онлайн-ритейлер [1](https://guruseller.ru/zolotoe-yabloko-dlya-sellerov-usloviya-vkhod-i-chto-prodayotsya/).
 - **Сильные стороны**: Сильный, модный бренд, колоссальный трафик, интеграция отечественных и азиатских новинок [3](https://shoppers.media/articles/28319_cem-prodavcy-kosmetiki-otvecaiut-na-ekonomiiu-rossiian). Удобная доставка и программа лояльности [2](https://msk.hullabaloo.ru/news/luchshie-magazini-kosmetiki-2026-v-moskve.html).
 - **Слабые стороны**: Постоянный дефицит (Out of Stock) оригинальных американских премиум-брендов (Charlotte Tilbury, Hourglass, профессиональные серии Image Skincare). Огромный ассортимент размывает индивидуальный фокус — покупателю трудно получить экспертную консультацию под конкретную проблему кожи.
 
