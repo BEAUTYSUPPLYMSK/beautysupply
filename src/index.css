@@ -1,6 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
+:root {
   --color-ivory: #F7F4EF;
   --color-ivory-dark: #EDE6DB;
   --color-charcoal: #1F1F1F;
