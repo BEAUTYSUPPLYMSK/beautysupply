@@ -362,7 +362,7 @@ export default function App() {
     const text = encodeURIComponent(
       `Здравствуйте! Хочу заказать на сайте beautysupply.shop товар: ${productName} за ${price} руб. Пожалуйста, оформите доставку.`
     );
-    return `https://t.me/beautysupply?text=${text}`; // Real username: beautysupply
+    return `https://t.me/beautysupply?text=${text}`;
   };
 
   const filteredProducts = products.filter((product) => {
@@ -1227,7 +1227,13 @@ export default function App() {
 
       {/* INTERACTIVE PRODUCT DETAIL MODAL (PDP) */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" role="presentation">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedProduct(null);
+          }}
+        >
           <div role="dialog" aria-modal="true" aria-labelledby="product-modal-title" className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto">
             
             {/* Close button */}
@@ -1267,7 +1273,11 @@ export default function App() {
                 <h2 id="product-modal-title" className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1F1F] leading-tight">{selectedProduct.name}</h2>
                 <div className="flex items-center gap-4">
                   <span className="text-xl sm:text-2xl font-bold text-[#1F1F1F]">{formatPrice(selectedProduct.price)} ₽</span>
-                  <span className="text-xs px-2.5 py-0.5 bg-[#EDE6DB] text-[#4A4541] font-semibold uppercase tracking-wider rounded-full">В наличии в Москве</span>
+                  {selectedProduct.isAvailable ? (
+                    <span className="text-xs px-2.5 py-0.5 bg-[#EDE6DB] text-[#4A4541] font-semibold uppercase tracking-wider rounded-full">В наличии в Москве</span>
+                  ) : (
+                    <span className="text-xs px-2.5 py-0.5 bg-[#E8D5CE] text-[#7A3B2E] font-semibold uppercase tracking-wider rounded-full">Под заказ из США</span>
+                  )}
                 </div>
               </div>
 
@@ -1323,7 +1333,13 @@ export default function App() {
 
       {/* INTERACTIVE ARTICLE DETAIL MODAL */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" role="presentation">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedArticle(null);
+          }}
+        >
           <div role="dialog" aria-modal="true" aria-labelledby="article-modal-title" className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6">
             
             {/* Close button */}

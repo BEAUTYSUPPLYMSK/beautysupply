@@ -31,14 +31,60 @@ Cloudflare — мировой лидер в области защиты сайт
 ---
 
 ## Вариант 2: Деплой через GitHub Pages (Бесплатный встроенный хостинг)
-Вы можете запустить сайт прямо из этого репозитория GitHub за 2 минуты.
+Вы можете запустить сайт прямо из этого репозитория GitHub за 2 минуты. В репозитории уже лежит готовый собранный файл `docs/index.html` (идентичен `dist/index.html` после `npm run build`), поэтому для запуска не требуется ни воркфлоу, ни билд-сервер.
 
 ### Шаг 1: Настройка репозитория на GitHub
 1. Перейдите в настройки вашего репозитория `BEAUTYSUPPLYMSK/beautysupply` на GitHub (вкладка **«Settings»**).
 2. В левом меню выберите раздел **«Pages»**.
 3. В секции **«Build and deployment»**:
    - Source: выберите **«Deploy from a branch»**.
-   - Branch: выберите ветку с актуальной версией сайта (или `main` после слияния) и укажите папку `/docs` (если скопировать туда `index.html`), либо настройте простую автоматическую сборку через **GitHub Actions** (выберите пресет *Static HTML* или *Vite*).
+   - Branch: выберите `main` и папку **`/docs`**.
+4. Нажмите **«Save»**. Через 1–2 минуты сайт будет доступен по адресу: `https://beautysupplymsk.github.io/beautysupply/`.
+
+> **Как обновлять сайт после изменения кода**: выполните `npm run build` и скопируйте получившийся `dist/index.html` в `docs/index.html` (это две одинаковые команды: `npm run build && cp dist/index.html docs/index.html`), затем закоммитьте изменения.
+
+### Альтернатива: автоматический деплой через GitHub Actions
+Если вы хотите, чтобы сайт собирался и деплоился автоматически при каждом пуше в `main` (без ручного копирования в `docs/`), добавьте в репозиторий файл `.github/workflows/deploy.yml` с содержимым ниже и выберите в **Settings → Pages** источник **«GitHub Actions»**:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+> Примечание: файлы воркфлоу должны быть добавлены в репозиторий аккаунтом, у которого есть разрешение `workflows` (владелец репозитория или токен с этим скоупом).
 
 ### Шаг 2: Настройка DNS на стороне Porkbun
 Если вы используете GitHub Pages напрямую без Cloudflare, вам нужно прописать А-записи в личном кабинете Porkbun:

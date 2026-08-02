@@ -32,7 +32,7 @@ YouTube — мощнейший источник бесплатного высо�
 - **Теги и ключевые слова**: `Image Skincare отзывы`, `Charlotte Tilbury купить Москва`, `Hourglass Ambient палетка свотчи`, `оригинальная косметика из США`, `профессиональный SPF крем`.
 - **Описание видео**: Первые 3 строки должны содержать главные ссылки.
   - *Пример описания*:
-    > Купить оригинальную косметику Image Skincare, Hourglass и Charlotte Tilbury с гарантией подлинности: https://beauty-supply.shop/  
+    > Купить оригинальную косметику Image Skincare, Hourglass и Charlotte Tilbury с гарантией подлинности: https://beautysupply.shop/  
     > Наш Telegram-канал с анонсами поставок и заказами из США: https://t.me/beautysupply  
     > Бесплатная консультация бьюти-эксперта в Telegram: https://t.me/beautysupply_manager  
     >   
