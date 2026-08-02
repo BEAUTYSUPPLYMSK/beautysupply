@@ -378,14 +378,42 @@ This repository should enable:
 - Keep channels connected to commerce.
 - Keep the repository practical and implementation-ready.
 
-## 18. Deployment
-The site is a single-file landing built with Vite + `vite-plugin-singlefile` into `dist/index.html`.
+## 18. Website stack (landing)
 
-- Step-by-step deployment instructions (Cloudflare Pages and GitHub Pages): see **[DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)**.
-- GitHub Pages quick start: **Settings → Pages → Deploy from a branch → `main` → `/docs`** — the pre-built `docs/index.html` is already committed to the repository.
-- Optional: the GitHub Actions workflow for fully automated deploys is documented in `DEPLOY_GUIDE.md` (add it with an account that has `workflows` permission).
-- Local checks: `npm run typecheck && npm run build` (both must pass green), then `cp dist/index.html docs/index.html` to refresh the Pages artifact.
+| Layer | Choice |
+|---|---|
+| UI | React 19 + TypeScript |
+| Build | Vite 7 + `vite-plugin-singlefile` |
+| Styles | Tailwind CSS v4 (`@tailwindcss/postcss`) |
+| Output | Single self-contained `dist/index.html` |
+| Hosting | GitHub Pages / Cloudflare Pages |
 
+### Local development
+```bash
+npm ci
+npm run dev          # http://localhost:5173
+npm run typecheck
+npm run build
+npm run pages:sync   # refresh docs/ artifact for branch-based Pages
+npm run check        # typecheck + build
+```
+
+## 19. Deployment
+Full guide: **[DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)**.
+
+**Recommended — branch `/docs` (zero setup beyond Pages toggle)**
+1. Settings → Pages → Deploy from a branch → `main` / `/docs`
+2. Site: `https://beautysupplymsk.github.io/beautysupply/`
+3. After code changes: `npm run pages:sync` and commit `docs/`
+
+**Optional — GitHub Actions auto-build**
+1. Copy `deploy/github-pages.yml` → `.github/workflows/deploy-pages.yml` (needs `workflows` permission)
+2. Settings → Pages → Source: GitHub Actions
+
+**Cloudflare Pages**
+- Build command: `npm run build`
+- Output directory: `dist`
+- Node 20+
 ---
 
 **Beauty Supply is a premium imported beauty destination for Russia, built to combine trust, commerce, education, and retention in one coherent system.**

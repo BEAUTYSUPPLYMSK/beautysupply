@@ -1,20 +1,24 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "beautysupply",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Beauty Supply — premium USA beauty landing (Vite + React + Tailwind)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run build"
+    "check": "npm run typecheck && npm run build",
+    "pages:sync": "npm run build && node scripts/sync-pages.mjs",
+    "pages:prepare": "npm run pages:sync"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
-    "clsx": "2.1.1",
     "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "tailwind-merge": "3.4.0"
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
@@ -22,8 +26,6 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
-    "autoprefixer": "^10.4.14",
-    "esbuild": "^0.28.1",
     "postcss": "^8.4.30",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
