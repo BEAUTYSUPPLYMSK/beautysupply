@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Interfaces
 interface Product {
@@ -279,6 +279,7 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -286,8 +287,7 @@ export default function App() {
   const [message, setMessage] = useState('');
 
   // Counter stats animation (simulated)
-  const [yearsOnMarket, setYearsOnMarket] = useState(0);
-  const [reviewsCount, setReviewsCount] = useState(0);
+  const reviewsCount = 120;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -297,50 +297,59 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Simple stats counter on mount
   useEffect(() => {
-    let year = 0;
-    let reviewsNum = 0;
-    const yearInterval = setInterval(() => {
-      if (year < 15) {
-        year++;
-        setYearsOnMarket(year);
-      } else {
-        clearInterval(yearInterval);
-      }
-    }, 80);
+    const isModalOpen = selectedProduct !== null || selectedArticle !== null;
+    if (!isModalOpen) return;
 
-    const reviewsInterval = setInterval(() => {
-      if (reviewsNum < 120) {
-        reviewsNum += 5;
-        setReviewsCount(Math.min(reviewsNum, 120));
-      } else {
-        clearInterval(reviewsInterval);
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedProduct(null);
+        setSelectedArticle(null);
       }
-    }, 40);
-
-    return () => {
-      clearInterval(yearInterval);
-      clearInterval(reviewsInterval);
     };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [selectedArticle, selectedProduct]);
+
+  useEffect(() => () => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
   }, []);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email) {
-      triggerToast('Пожалуйста, заполните обязательные поля');
+  const handleContactSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedName || !trimmedEmail) {
+      triggerToast('Пожалуйста, заполните обязательные поля.');
       return;
     }
-    triggerToast('Спасибо за сообщение! Наш эксперт свяжется с вами в течение 15 минут.');
-    setName('');
-    setEmail('');
-    setMessage('');
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      triggerToast('Введите корректный адрес электронной почты.');
+      return;
+    }
+    const subject = `Запрос с сайта от ${trimmedName}`;
+    const body = [
+      `Имя: ${trimmedName}`,
+      `Email для ответа: ${trimmedEmail}`,
+      '',
+      message.trim() || 'Сообщение не указано.'
+    ].join('\n');
+    window.location.href = `mailto:info@beautysupply.shop?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    triggerToast('Открываем почтовый клиент для отправки сообщения.');
   };
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
       setToastMessage('');
+      toastTimeoutRef.current = null;
     }, 5000);
   };
 
@@ -354,13 +363,6 @@ export default function App() {
       `Здравствуйте! Хочу заказать на сайте beautysupply.shop товар: ${productName} за ${price} руб. Пожалуйста, оформите доставку.`
     );
     return `https://t.me/beautysupply?text=${text}`; // Real username: beautysupply
-  };
-
-  const getWhatsAppLink = (productName: string, price: number) => {
-    const text = encodeURIComponent(
-      `Здравствуйте! Хочу заказать на сайте beautysupply.shop товар: ${productName} за ${price} руб. Пожалуйста, оформите доставку.`
-    );
-    return `https://wa.me/79001234567?text=${text}`; // Placeholder WA
   };
 
   const filteredProducts = products.filter((product) => {
@@ -385,7 +387,7 @@ export default function App() {
       <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'glass border-b border-[#EDE6DB]/40 shadow-sm' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <a href="#" className="font-serif text-2xl md:text-3xl font-semibold tracking-wide hover:opacity-80 transition-opacity">
+            <a href="#top" className="font-serif text-2xl md:text-3xl font-semibold tracking-wide hover:opacity-80 transition-opacity">
               BEAUTY SUPPLY
             </a>
 
@@ -416,7 +418,8 @@ export default function App() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-[#1F1F1F] hover:text-[#C8A96D] transition-colors"
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={mobileMenuOpen}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 {mobileMenuOpen ? (
@@ -454,7 +457,7 @@ export default function App() {
       </nav>
 
       {/* 1. HERO BLOCK */}
-      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-b from-[#F7F4EF] to-[#EDE6DB]/50">
+      <section id="top" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-b from-[#F7F4EF] to-[#EDE6DB]/50">
         {/* Abstract orbs to replicate premium feel */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#E8D5CE]/30 blur-3xl animate-float"></div>
@@ -706,6 +709,7 @@ export default function App() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск по названию или бренду..."
+                aria-label="Поиск по каталогу"
                 className="w-full px-5 py-2.5 pr-10 text-xs bg-white border border-[#EDE6DB] rounded-full focus:outline-none focus:border-[#C8A96D] focus:ring-1 focus:ring-[#C8A96D]"
               />
               <svg className="absolute right-4 top-2.5 w-4 h-4 text-[#A69C91]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -720,8 +724,17 @@ export default function App() {
               {filteredProducts.map((product) => (
                 <article
                   key={product.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Открыть карточку товара: ${product.name}`}
                   onClick={() => setSelectedProduct(product)}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-[#EDE6DB]/30 transition-all duration-300 hover:-translate-y-1"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedProduct(product);
+                    }
+                  }}
+                  className="group cursor-pointer focus-visible-ring bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-[#EDE6DB]/30 transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Photo area */}
                   <div className={`relative aspect-square bg-gradient-to-br ${product.gradient} p-6 flex flex-col justify-between`}>
@@ -753,15 +766,9 @@ export default function App() {
                       <span className="text-sm sm:text-base font-bold text-[#1F1F1F]">
                         {formatPrice(product.price)} ₽
                       </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProduct(product);
-                        }}
-                        className="px-4 py-2 bg-[#1F1F1F] text-[#F7F4EF] group-hover:bg-[#C8A96D] text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors"
-                      >
-                        Заказать
-                      </button>
+                      <span className="px-4 py-2 bg-[#1F1F1F] text-[#F7F4EF] group-hover:bg-[#C8A96D] text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors">
+                        Подробнее
+                      </span>
                     </div>
                   </div>
                 </article>
@@ -925,8 +932,17 @@ export default function App() {
             {articles.map((art) => (
               <article
                 key={art.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Открыть статью: ${art.title}`}
                 onClick={() => setSelectedArticle(art)}
-                className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-[#EDE6DB]/30 transition-all duration-300"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setSelectedArticle(art);
+                  }
+                }}
+                className="group cursor-pointer focus-visible-ring bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-[#EDE6DB]/30 transition-all duration-300"
               >
                 <div className={`aspect-video bg-gradient-to-br ${art.gradient} flex items-center justify-center p-8 relative`}>
                   <div className="text-5xl bg-white/70 w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg shadow-black/5 group-hover:scale-110 transition-transform duration-300">
@@ -1030,14 +1046,6 @@ export default function App() {
                   </svg>
                   Telegram
                 </a>
-                <a
-                  href="https://wa.me/79001234567"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2"
-                >
-                  WhatsApp
-                </a>
               </div>
             </div>
 
@@ -1047,8 +1055,9 @@ export default function App() {
                 <h3 className="font-serif text-xl font-bold mb-4">Напишите нам</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Имя *</label>
+                    <label htmlFor="contact-name" className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Имя *</label>
                     <input
+                      id="contact-name"
                       type="text"
                       required
                       value={name}
@@ -1058,8 +1067,9 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Email *</label>
+                    <label htmlFor="contact-email" className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Email *</label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={email}
@@ -1073,6 +1083,7 @@ export default function App() {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Ваш запрос / Сообщение</label>
                   <textarea
                     rows={4}
+                    name="message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Какие средства Image Skincare порекомендуете при куперозе?"
@@ -1135,7 +1146,7 @@ export default function App() {
             
             {/* Column 1: Identity */}
             <div className="space-y-4">
-              <a href="#" className="font-serif text-2xl font-bold tracking-wider text-white">BEAUTY SUPPLY</a>
+              <a href="#top" className="font-serif text-2xl font-bold tracking-wider text-white">BEAUTY SUPPLY</a>
               <p className="text-xs leading-relaxed text-[#A69C91]/80 mt-2">
                 Премиальный онлайн-магазин оригинальной уходовой и декоративной косметики из США. Основан в ноябре 2011 года на базе официального Avito-профиля.
               </p>
@@ -1216,12 +1227,13 @@ export default function App() {
 
       {/* INTERACTIVE PRODUCT DETAIL MODAL (PDP) */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" role="presentation">
+          <div role="dialog" aria-modal="true" aria-labelledby="product-modal-title" className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto">
             
             {/* Close button */}
             <button
               onClick={() => setSelectedProduct(null)}
+              aria-label="Закрыть карточку товара"
               className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300"
             >
               ✕
@@ -1252,7 +1264,7 @@ export default function App() {
             <div className="md:col-span-7 p-8 sm:p-10 space-y-6 text-left">
               <div className="space-y-2">
                 <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">{selectedProduct.brand}</span>
-                <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1F1F] leading-tight">{selectedProduct.name}</h2>
+                <h2 id="product-modal-title" className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1F1F] leading-tight">{selectedProduct.name}</h2>
                 <div className="flex items-center gap-4">
                   <span className="text-xl sm:text-2xl font-bold text-[#1F1F1F]">{formatPrice(selectedProduct.price)} ₽</span>
                   <span className="text-xs px-2.5 py-0.5 bg-[#EDE6DB] text-[#4A4541] font-semibold uppercase tracking-wider rounded-full">В наличии в Москве</span>
@@ -1286,7 +1298,7 @@ export default function App() {
               {/* CTA Orders block */}
               <div className="pt-4 border-t border-[#EDE6DB] space-y-3">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Оформить заказ или проконсультироваться:</p>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid gap-3">
                   <a
                     href={getTelegramLink(selectedProduct.name, selectedProduct.price)}
                     target="_blank"
@@ -1298,15 +1310,6 @@ export default function App() {
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                     </svg>
                     Купить в Telegram
-                  </a>
-                  <a
-                    href={getWhatsAppLink(selectedProduct.name, selectedProduct.price)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setSelectedProduct(null)}
-                    className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-lg transition-colors"
-                  >
-                    Заказать в WhatsApp
                   </a>
                 </div>
               </div>
@@ -1320,12 +1323,13 @@ export default function App() {
 
       {/* INTERACTIVE ARTICLE DETAIL MODAL */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" role="presentation">
+          <div role="dialog" aria-modal="true" aria-labelledby="article-modal-title" className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6">
             
             {/* Close button */}
             <button
               onClick={() => setSelectedArticle(null)}
+              aria-label="Закрыть статью"
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300"
             >
               ✕
@@ -1336,7 +1340,7 @@ export default function App() {
               <span className="px-3 py-1 bg-[#EDE6DB] text-[#4A4541] text-[9px] font-bold uppercase tracking-widest rounded-full">
                 {selectedArticle.category} · {selectedArticle.readTime} чтения
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-semibold leading-tight text-[#1F1F1F] pt-2">{selectedArticle.title}</h2>
+              <h2 id="article-modal-title" className="font-serif text-2xl sm:text-3xl font-semibold leading-tight text-[#1F1F1F] pt-2">{selectedArticle.title}</h2>
               <div className="w-16 h-0.5 bg-[#C8A96D] mt-3"></div>
             </div>
 
