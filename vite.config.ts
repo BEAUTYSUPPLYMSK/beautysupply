@@ -7,15 +7,21 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// https://vite.dev/config/
+// Single-file static build for GitHub Pages / Cloudflare Pages.
+// Relative base keeps assets working both at domain root and /beautysupply/.
 export default defineConfig({
-  // Relative base so the single-file build works on GitHub Pages
-  // both at the domain root and in a /beautysupply/ subpath.
-  base: './',
+  base: "./",
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    cssCodeSplit: false,
+    assetsInlineLimit: 100000000,
+    sourcemap: false,
   },
 });

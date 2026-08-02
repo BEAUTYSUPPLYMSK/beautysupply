@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 
 // Interfaces
 interface Product {
@@ -286,14 +286,20 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
-  // Counter stats animation (simulated)
-  const reviewsCount = 120;
+  // Official Avito trust metric (see CONTEXT-AVITO.MD / README)
+  const reviewsCount = 33;
+  const catalogTabId = useId();
+  const catalogPanelId = useId();
+  const productCloseRef = useRef<HTMLButtonElement | null>(null);
+  const articleCloseRef = useRef<HTMLButtonElement | null>(null);
+  const lastFocusRef = useRef<HTMLElement | null>(null);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -301,27 +307,47 @@ export default function App() {
     const isModalOpen = selectedProduct !== null || selectedArticle !== null;
     if (!isModalOpen) return;
 
+    lastFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
     const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         setSelectedProduct(null);
         setSelectedArticle(null);
+        setMobileMenuOpen(false);
       }
     };
 
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', closeOnEscape);
+
+    const focusTarget = selectedProduct ? productCloseRef.current : articleCloseRef.current;
+    // Defer focus until dialog is painted
+    requestAnimationFrame(() => focusTarget?.focus());
+
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
+      lastFocusRef.current?.focus?.();
     };
   }, [selectedArticle, selectedProduct]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [mobileMenuOpen]);
 
   useEffect(() => () => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
   }, []);
 
-  const handleContactSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
@@ -329,7 +355,7 @@ export default function App() {
       triggerToast('Пожалуйста, заполните обязательные поля.');
       return;
     }
-    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       triggerToast('Введите корректный адрес электронной почты.');
       return;
     }
@@ -342,6 +368,22 @@ export default function App() {
     ].join('\n');
     window.location.href = `mailto:info@beautysupply.shop?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     triggerToast('Открываем почтовый клиент для отправки сообщения.');
+  };
+
+  const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      triggerToast('Введите корректный email для подписки.');
+      return;
+    }
+    // Static site: no backend — route interest to Telegram with prefilled context
+    const text = encodeURIComponent(
+      `Здравствуйте! Хочу получать новости Beauty Supply. Мой email: ${trimmed}`
+    );
+    window.open(`https://t.me/beautysupply?text=${text}`, '_blank', 'noopener,noreferrer');
+    setNewsletterEmail('');
+    triggerToast('Открываем Telegram — там самые быстрые новости о выкупах.');
   };
 
   const triggerToast = (msg: string) => {
@@ -376,15 +418,25 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F7F4EF] text-[#1F1F1F] selection:bg-[#C8A96D] selection:text-white font-sans antialiased">
       {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md bg-[#1F1F1F] text-[#F7F4EF] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-[#C8A96D]/30 transition-all duration-300 animate-slide-up">
-          <span className="text-[#C8A96D] text-lg">✦</span>
-          <p className="text-sm font-medium">{toastMessage}</p>
-        </div>
-      )}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="fixed bottom-6 right-6 z-50 max-w-md"
+      >
+        {toastMessage && (
+          <div className="bg-[#1F1F1F] text-[#F7F4EF] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-[#C8A96D]/30 transition-all duration-300 animate-slide-up">
+            <span className="text-[#C8A96D] text-lg" aria-hidden="true">✦</span>
+            <p className="text-sm font-medium">{toastMessage}</p>
+          </div>
+        )}
+      </div>
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'glass border-b border-[#EDE6DB]/40 shadow-sm' : 'bg-transparent'}`}>
+      <nav
+        aria-label="Основная навигация"
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'glass border-b border-[#EDE6DB]/40 shadow-sm' : 'bg-transparent'}`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
             <a href="#top" className="font-serif text-2xl md:text-3xl font-semibold tracking-wide hover:opacity-80 transition-opacity">
@@ -416,10 +468,12 @@ export default function App() {
 
             {/* Mobile menu button */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-[#1F1F1F] hover:text-[#C8A96D] transition-colors"
+              className="lg:hidden p-2 text-[#1F1F1F] hover:text-[#C8A96D] transition-colors focus-visible-ring rounded"
               aria-label={mobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-panel"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 {mobileMenuOpen ? (
@@ -434,20 +488,23 @@ export default function App() {
 
         {/* Mobile Navigation Panel */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#F7F4EF] border-b border-[#EDE6DB] px-4 pt-2 pb-6 space-y-3 shadow-lg">
-            <a href="#catalog" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Каталог</a>
-            <a href="#brands" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Бренды</a>
-            <a href="#about" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">О нас</a>
-            <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Отзывы</a>
-            <a href="#guide" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Бьюти-гид</a>
-            <a href="#delivery" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Доставка</a>
-            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541]">Контакты</a>
+          <div
+            id="mobile-nav-panel"
+            className="lg:hidden bg-[#F7F4EF] border-b border-[#EDE6DB] px-4 pt-2 pb-6 space-y-3 shadow-lg"
+          >
+            <a href="#catalog" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Каталог</a>
+            <a href="#brands" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Бренды</a>
+            <a href="#about" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">О нас</a>
+            <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Отзывы</a>
+            <a href="#guide" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Бьюти-гид</a>
+            <a href="#delivery" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Доставка</a>
+            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Контакты</a>
             <div className="pt-2 px-3">
               <a
                 href="https://t.me/beautysupply"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full text-center inline-block px-6 py-3 bg-[#1F1F1F] text-[#F7F4EF] text-xs font-bold uppercase tracking-wider rounded-full"
+                className="w-full text-center inline-block px-6 py-3 bg-[#1F1F1F] text-[#F7F4EF] text-xs font-bold uppercase tracking-wider rounded-full focus-visible-ring"
               >
                 Заказать в Telegram
               </a>
@@ -629,25 +686,28 @@ export default function App() {
             {[
               {
                 name: 'IMAGE Skincare',
+                search: 'Image Skincare',
                 slogan: 'Clinical. Clean. Conscious.',
                 desc: 'Профессиональная космецевтика, созданная пластическими хирургами и дерматологами. Умные формулы с доказанным действием (ретинол, стабильный витамин C, пептиды).',
                 bg: 'bg-white/5 border border-white/10'
               },
               {
                 name: 'Charlotte Tilbury',
+                search: 'Charlotte Tilbury',
                 slogan: 'Makeup Magic For Every Look',
                 desc: 'Культовый британский и американский люкс от визажиста мировых звезд Шарлотты Тилбери. Самые разыскиваемые палетки, скульпторы и помады.',
                 bg: 'bg-gradient-to-b from-white/5 to-[#C8A96D]/10 border border-[#C8A96D]/20'
               },
               {
                 name: 'HOURGLASS',
+                search: 'Hourglass',
                 slogan: 'Modern Luxury Beauty',
                 desc: 'Революционный премиальный макияж, известный веганскими формулами и запатентованной фотолюминисцентной технологией Ambient для кожи.',
                 bg: 'bg-white/5 border border-white/10'
               }
-            ].map((brand, idx) => (
+            ].map((brand) => (
               <div
-                key={idx}
+                key={brand.name}
                 className={`p-8 rounded-2xl space-y-6 flex flex-col justify-between ${brand.bg} hover:border-[#C8A96D]/50 transition-colors duration-300`}
               >
                 <div className="space-y-4">
@@ -656,11 +716,13 @@ export default function App() {
                   <p className="text-[#A69C91] text-xs leading-relaxed">{brand.desc}</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
-                    setSearchQuery(brand.name);
+                    setSelectedCategory('all');
+                    setSearchQuery(brand.search);
                     document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="text-xs font-bold uppercase tracking-wider text-white hover:text-[#C8A96D] transition-colors flex items-center gap-2"
+                  className="text-xs font-bold uppercase tracking-wider text-white hover:text-[#C8A96D] transition-colors flex items-center gap-2 focus-visible-ring rounded"
                 >
                   Смотреть продукты →
                 </button>
@@ -684,35 +746,47 @@ export default function App() {
           {/* Catalog Filters and Search */}
           <div className="flex flex-col md:flex-row gap-6 justify-between items-center mb-12">
             {/* Category tabs */}
-            <div className="flex flex-wrap gap-2 justify-center" role="tablist">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                    selectedCategory === cat.id
-                      ? 'bg-[#1F1F1F] text-[#F7F4EF] shadow-md'
-                      : 'bg-white text-[#4A4541] hover:bg-[#EDE6DB] border border-[#EDE6DB]/40'
-                  }`}
-                  role="tab"
-                  aria-selected={selectedCategory === cat.id}
-                >
-                  {cat.name}
-                </button>
-              ))}
+            <div
+              className="flex flex-wrap gap-2 justify-center"
+              role="tablist"
+              aria-label="Категории каталога"
+            >
+              {categories.map((cat) => {
+                const selected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    id={`${catalogTabId}-${cat.id}`}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 focus-visible-ring ${
+                      selected
+                        ? 'bg-[#1F1F1F] text-[#F7F4EF] shadow-md'
+                        : 'bg-white text-[#4A4541] hover:bg-[#EDE6DB] border border-[#EDE6DB]/40'
+                    }`}
+                    role="tab"
+                    aria-selected={selected}
+                    aria-controls={catalogPanelId}
+                    tabIndex={selected ? 0 : -1}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Live Search bar */}
             <div className="relative w-full md:w-80">
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск по названию или бренду..."
                 aria-label="Поиск по каталогу"
+                autoComplete="off"
                 className="w-full px-5 py-2.5 pr-10 text-xs bg-white border border-[#EDE6DB] rounded-full focus:outline-none focus:border-[#C8A96D] focus:ring-1 focus:ring-[#C8A96D]"
               />
-              <svg className="absolute right-4 top-2.5 w-4 h-4 text-[#A69C91]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="absolute right-4 top-2.5 w-4 h-4 text-[#A69C91] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -720,7 +794,12 @@ export default function App() {
 
           {/* Grid Products */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div
+              id={catalogPanelId}
+              role="tabpanel"
+              aria-label="Список товаров"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            >
               {filteredProducts.map((product) => (
                 <article
                   key={product.id}
@@ -780,8 +859,9 @@ export default function App() {
               <p className="text-sm font-semibold text-[#4A4541]">Товары не найдены</p>
               <p className="text-xs text-[#A69C91] mt-2">Попробуйте ввести другое ключевое слово или сбросить фильтр категорий.</p>
               <button
+                type="button"
                 onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
-                className="mt-6 px-6 py-2.5 bg-[#1F1F1F] text-[#F7F4EF] text-xs font-bold uppercase tracking-wider rounded-full"
+                className="mt-6 px-6 py-2.5 bg-[#1F1F1F] text-[#F7F4EF] text-xs font-bold uppercase tracking-wider rounded-full focus-visible-ring"
               >
                 Сбросить фильтры
               </button>
@@ -819,7 +899,7 @@ export default function App() {
               <div className="w-16 h-0.5 bg-[#C8A96D]"></div>
               
               <p className="text-sm text-[#4A4541] leading-relaxed">
-                Beauty Supply начал свой путь в ноябре 2011 года как экспертный бьюти-дистрибьютор оригинальной американской косметики на платформе Avito. За 15 лет безупречной работы мы заслужили репутацию надёжного партнёра, завоевав рейтинг 5.0 на основе сотен отзывов.
+                Beauty Supply начал свой путь в ноябре 2011 года как экспертный бьюти-дистрибьютор оригинальной американской косметики на платформе Avito. За годы безупречной работы мы заслужили репутацию надёжного партнёра, завоевав рейтинг 5.0 на основе десятков живых отзывов.
               </p>
               <p className="text-sm text-[#4A4541] leading-relaxed">
                 Наша миссия — открыть российским покупателям доступ к закрытым профессиональным космецевтическим маркам из США и трендовым лимитированным выпускам декоративного люкса, которые не представлены на полках классического ритейла. Мы гарантируем полную прозрачность поставок, верифицируемость каждого батч-кода и искренний экспертный сервис.
@@ -1059,7 +1139,9 @@ export default function App() {
                     <input
                       id="contact-name"
                       type="text"
+                      name="name"
                       required
+                      autoComplete="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Александра"
@@ -1071,7 +1153,9 @@ export default function App() {
                     <input
                       id="contact-email"
                       type="email"
+                      name="email"
                       required
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="alexandra@example.com"
@@ -1080,8 +1164,9 @@ export default function App() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Ваш запрос / Сообщение</label>
+                  <label htmlFor="contact-message" className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Ваш запрос / Сообщение</label>
                   <textarea
+                    id="contact-message"
                     rows={4}
                     name="message"
                     value={message}
@@ -1092,7 +1177,7 @@ export default function App() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#1F1F1F] text-[#F7F4EF] hover:bg-[#C8A96D] text-xs font-bold uppercase tracking-widest rounded-lg transition-colors shadow-lg shadow-black/10"
+                  className="w-full py-4 bg-[#1F1F1F] text-[#F7F4EF] hover:bg-[#C8A96D] text-xs font-bold uppercase tracking-widest rounded-lg transition-colors shadow-lg shadow-black/10 focus-visible-ring"
                 >
                   Отправить Сообщение
                 </button>
@@ -1196,20 +1281,23 @@ export default function App() {
             <div className="space-y-4">
               <h4 className="font-serif text-white font-semibold text-lg">Бьюти-Клуб</h4>
               <p className="text-xs text-[#A69C91]/80">Подпишитесь на рассылку новостей о еженедельных выкупах в США со скидками.</p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  triggerToast('Вы успешно подписались на закрытые распродажи!');
-                }}
-                className="flex gap-2"
-              >
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <label htmlFor="newsletter-email" className="sr-only">Email для подписки</label>
                 <input
+                  id="newsletter-email"
                   type="email"
                   required
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
                   placeholder="Ваш email..."
+                  autoComplete="email"
                   className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-[#C8A96D]"
                 />
-                <button type="submit" className="px-4 py-2 bg-[#C8A96D] hover:bg-[#DCC8A3] text-[#1F1F1F] font-bold text-xs rounded-lg uppercase tracking-wider">
+                <button
+                  type="submit"
+                  aria-label="Подписаться на новости"
+                  className="px-4 py-2 bg-[#C8A96D] hover:bg-[#DCC8A3] text-[#1F1F1F] font-bold text-xs rounded-lg uppercase tracking-wider focus-visible-ring"
+                >
                   →
                 </button>
               </form>
@@ -1234,13 +1322,20 @@ export default function App() {
             if (event.target === event.currentTarget) setSelectedProduct(null);
           }}
         >
-          <div role="dialog" aria-modal="true" aria-labelledby="product-modal-title" className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="product-modal-title"
+            className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto"
+          >
             
             {/* Close button */}
             <button
+              ref={productCloseRef}
+              type="button"
               onClick={() => setSelectedProduct(null)}
               aria-label="Закрыть карточку товара"
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300"
+              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300 focus-visible-ring"
             >
               ✕
             </button>
@@ -1340,13 +1435,20 @@ export default function App() {
             if (event.target === event.currentTarget) setSelectedArticle(null);
           }}
         >
-          <div role="dialog" aria-modal="true" aria-labelledby="article-modal-title" className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="article-modal-title"
+            className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6"
+          >
             
             {/* Close button */}
             <button
+              ref={articleCloseRef}
+              type="button"
               onClick={() => setSelectedArticle(null)}
               aria-label="Закрыть статью"
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 border border-[#EDE6DB] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white flex items-center justify-center text-sm font-bold transition-all duration-300 focus-visible-ring"
             >
               ✕
             </button>
@@ -1372,12 +1474,13 @@ export default function App() {
                 <p className="text-[10px] text-[#A69C91] mt-1">Оригинальные средства с ретинолом, витамином C и SPF уже на складе в Москве.</p>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setSelectedArticle(null);
                   setSelectedCategory('all');
                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-6 py-2.5 bg-[#1F1F1F] hover:bg-[#C8A96D] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors"
+                className="px-6 py-2.5 bg-[#1F1F1F] hover:bg-[#C8A96D] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors focus-visible-ring"
               >
                 В каталог
               </button>
