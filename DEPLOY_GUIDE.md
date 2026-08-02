@@ -23,44 +23,16 @@ npm run pages:sync
 
 ---
 
-## Вариант A: GitHub Pages через GitHub Actions (рекомендуется)
+## Вариант A: GitHub Pages из ветки `/docs` (работает сразу, без Actions)
 
-В репозитории уже есть workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
-
-### Шаг 1. Включить Pages
-1. Откройте **Settings → Pages** репозитория `BEAUTYSUPPLYMSK/beautysupply`.
-2. **Source**: `GitHub Actions`.
-3. Сохраните.
-
-### Шаг 2. Запустить деплой
-- Сделайте push в `main`, **или**
-- **Actions → Deploy to GitHub Pages → Run workflow**.
-
-Сайт появится по адресу:
-`https://beautysupplymsk.github.io/beautysupply/`
-
-> `base: './'` в `vite.config.ts` и single-file сборка корректно работают и на subpath, и на custom domain.
-
-### Шаг 3 (опционально). Custom domain
-1. В **Settings → Pages → Custom domain** укажите `beautysupply.shop`.
-2. В DNS (Porkbun или Cloudflare) добавьте A-записи GitHub Pages:
-   - `185.199.108.153`
-   - `185.199.109.153`
-   - `185.199.110.153`
-   - `185.199.111.153`
-3. CNAME для `www` → `beautysupplymsk.github.io.`
-4. Включите **Enforce HTTPS**.
-
----
-
-## Вариант B: GitHub Pages из ветки `/docs` (без Actions)
-
-Если по какой-то причине Actions недоступны, используйте закоммиченный артефакт `docs/`:
+В репозитории уже лежит production-артефакт `docs/` (single-file `index.html` + `404.html` + `.nojekyll` + SEO-файлы).
 
 1. **Settings → Pages**
 2. Source: **Deploy from a branch**
 3. Branch: `main` → folder **`/docs`**
 4. Save
+
+Сайт: `https://beautysupplymsk.github.io/beautysupply/`
 
 Обновление артефакта после правок кода:
 
@@ -70,6 +42,37 @@ git add docs
 git commit -m "chore: refresh GitHub Pages artifact"
 git push
 ```
+
+> `base: './'` в `vite.config.ts` и single-file сборка корректно работают и на subpath `/beautysupply/`, и на custom domain.
+
+---
+
+## Вариант B: GitHub Pages через GitHub Actions (автосборка)
+
+Готовый workflow-шаблон: [`deploy/github-pages.yml`](deploy/github-pages.yml).
+
+### Установка (один раз, от аккаунта с правом `workflows`)
+```bash
+mkdir -p .github/workflows
+cp deploy/github-pages.yml .github/workflows/deploy-pages.yml
+git add .github/workflows/deploy-pages.yml
+git commit -m "ci: enable GitHub Pages Actions deploy"
+git push
+```
+
+### Включение Pages
+1. **Settings → Pages → Source: GitHub Actions**
+2. Push в `main` или **Actions → Deploy to GitHub Pages → Run workflow**
+
+### Custom domain (для A или B)
+1. **Settings → Pages → Custom domain** → `beautysupply.shop`
+2. DNS A-записи GitHub Pages:
+   - `185.199.108.153`
+   - `185.199.109.153`
+   - `185.199.110.153`
+   - `185.199.111.153`
+3. CNAME `www` → `beautysupplymsk.github.io.`
+4. **Enforce HTTPS**
 
 ---
 
@@ -124,7 +127,7 @@ npx vite preview --host 127.0.0.1 --port 4173
 | `vite-plugin-singlefile` | Один HTML без внешних JS/CSS чанков |
 | `public/` | `robots.txt`, `sitemap.xml`, `og-cover.svg` → в `dist/` |
 | `docs/` | Закоммиченный fallback-артефакт для branch deploy |
-| `.github/workflows/deploy-pages.yml` | Автодеплой в GitHub Pages |
+| `deploy/github-pages.yml` | Шаблон Actions workflow (скопировать в `.github/workflows/`) |
 | `scripts/sync-pages.mjs` | Синхронизация `dist` → `docs` |
 
 Серверных API, env-секретов и backend-зависимостей в проекте нет — это чистый static site.

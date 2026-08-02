@@ -401,20 +401,19 @@ npm run check        # typecheck + build
 ## 19. Deployment
 Full guide: **[DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)**.
 
-**Recommended — GitHub Actions Pages**
-1. Repo **Settings → Pages → Source: GitHub Actions**
-2. Push to `main` (workflow: `.github/workflows/deploy-pages.yml`)
-3. Site: `https://beautysupplymsk.github.io/beautysupply/`
-
-**Fallback — branch `/docs`**
+**Recommended — branch `/docs` (zero setup beyond Pages toggle)**
 1. Settings → Pages → Deploy from a branch → `main` / `/docs`
-2. After code changes: `npm run pages:sync` and commit `docs/`
+2. Site: `https://beautysupplymsk.github.io/beautysupply/`
+3. After code changes: `npm run pages:sync` and commit `docs/`
+
+**Optional — GitHub Actions auto-build**
+1. Copy `deploy/github-pages.yml` → `.github/workflows/deploy-pages.yml` (needs `workflows` permission)
+2. Settings → Pages → Source: GitHub Actions
 
 **Cloudflare Pages**
 - Build command: `npm run build`
 - Output directory: `dist`
 - Node 20+
-
 ---
 
 **Beauty Supply is a premium imported beauty destination for Russia, built to combine trust, commerce, education, and retention in one coherent system.**
