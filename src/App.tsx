@@ -10,6 +10,7 @@ interface Product {
   description: string;
   gradient: string;
   emoji: string;
+  image?: string;
   details: string;
   ingredients: string;
   usage: string;
@@ -46,6 +47,7 @@ const products: Product[] = [
     description: 'Интенсивное укрепление, лифтинг кожи тела и восстановление упругости.',
     gradient: 'from-[#F3E5D8] via-[#E8D5CE] to-[#F7E7CE]',
     emoji: '🧴',
+    image: '/products/volu-body.png',
     concern: 'Потеря тонуса, дряблость, сухость кожи тела',
     isAvailable: true,
     details: 'Ультра-насыщенный лифтинг-крем для тела разработан для восстановления плотности и тонуса кожи. Идеально подходит для зон с выраженной потерей эластичности (шея, декольте, внутренняя поверхность рук и бедер, живот). Стимулирует выработку коллагена, глубоко увлажняет и разглаживает микрорельеф.',
@@ -61,6 +63,7 @@ const products: Product[] = [
     description: 'Премиальный волюмайзер для лица. Восстанавливает объем и четкость контуров.',
     gradient: 'from-[#E8C9A8] via-[#F7E7CE] to-[#FFF8F0]',
     emoji: '✨',
+    image: '/products/volu-face.png',
     concern: 'Глубокие морщины, потеря объема лица, птоз, дегидратация',
     isAvailable: true,
     details: 'Инновационный ремоделирующий крем-волюмайзер для лица. Работает как безоперационный липофилинг: заполняет морщины изнутри, восстанавливает утраченные объемы скул и щек, подтягивает овал лица. Обеспечивает мощный anti-age эффект и глубокое клеточное питание.',
@@ -76,6 +79,7 @@ const products: Product[] = [
     description: 'Культовый крем Vital C. Глубокое увлажнение, борьба с тусклостью и куперозом.',
     gradient: 'from-[#FDFBF7] via-[#FFF8F0] to-[#E8C9A8]',
     emoji: '🍊',
+    image: '/products/vital-c.png',
     concern: 'Сухость, тусклый цвет лица, купероз, розацеа, фотостарение',
     isAvailable: true,
     details: 'Бестселлер бренда Image Skincare из серии Vital C. Ночной крем с высокой концентрацией стабильных форм витамина C и антиоксидантов. За ночь полностью реанимирует уставшую, обезвоженную кожу, гасит воспаления, укрепляет стенки капилляров при куперозе и дарит лицу невероятное утреннее сияние.',
@@ -91,6 +95,7 @@ const products: Product[] = [
     description: 'Ageless Total Retinol-A Crème. Мощное обновление клеток, борьба с акне и морщинами.',
     gradient: 'from-[#E8D5CE] via-[#EDE6DB] to-[#FDFBF7]',
     emoji: '🌙',
+    image: '/products/retinol.png',
     concern: 'Возрастные морщины, гиперпигментация, постакне, неровный рельеф',
     isAvailable: true,
     details: 'Высокоэффективный ночной крем с инкапсулированным ретинолом 0.3%. Уникальная система доставки позволяет ретинолу проникать глубоко в дерму, запуская ускоренное обновление клеток без раздражения эпидермиса. Разглаживает заломы, осветляет пигментные пятна и следы постакне, сужает поры.',
@@ -106,6 +111,7 @@ const products: Product[] = [
     description: 'Новая премиальная линейка. 100% минеральные фильтры, идеальная база под макияж.',
     gradient: 'from-[#DCC8A3] via-[#EDE6DB] to-[#F7F4EF]',
     emoji: '☀️',
+    image: '/products/spf30.png',
     concern: 'УФ-излучение, фотостарение, сухость кожи, пигментация',
     isAvailable: true,
     details: 'Премиальный солнцезащитный увлажняющий крем нового поколения из линии Daily Prevention. Содержит только безопасные физические минеральные фильтры (оксид цинка), которые отражают весь спектр UVA/UVB лучей. Не оставляет белого налета, интенсивно увлажняет кожу и служит безупречной базой под люксовые пудры и тона.',
@@ -121,6 +127,7 @@ const products: Product[] = [
     description: 'Максимальная защита кожи после пилингов, лазера и в горах.',
     gradient: 'from-[#EDE6DB] via-[#F7F4EF] to-[#E8C9A8]',
     emoji: '🛡️',
+    image: '/products/spf75.png',
     concern: 'Экстремальное солнце, гиперчувствительность после процедур, пигментные пятна',
     isAvailable: true,
     details: 'Ультра-защитный дневной смарт-крем с фактором SPF 75. Разработан для максимальной защиты поврежденной, чувствительной и подвергшейся агрессивным косметическим процедурам (пилинги, лазерная шлифовка) кожи. Блокирует 99% излучения, предотвращает появление гиперпигментации и рубцов.',
@@ -136,6 +143,7 @@ const products: Product[] = [
     description: 'Культовая люксовая палетка из 4 оттенков. Легендарный нежный нюд.',
     gradient: 'from-[#E8D5CE] via-[#FFF8F0] to-[#E8C9A8]',
     emoji: '🎨',
+    image: '/products/pillow-talk.png',
     concern: 'Нюдовый макияж, праздничный образ, роскошный финиш',
     isAvailable: true,
     details: 'Знаменитая четырехцветная палетка теней Luxury Palette в оттенке Pillow Talk от звездного визажиста Шарлотты Тилбери. Содержит идеально подобранные пудровые текстуры: от сатинового шампанского до матового розово-коричневого и сверкающего розового золота. Мягко тушуются и держатся весь день.',
@@ -151,6 +159,7 @@ const products: Product[] = [
     description: 'Curator Single Eyeshadow. Сверхмелкий помол и шелковистая текстура.',
     gradient: 'from-[#EDE6DB] via-[#F7E7CE] to-[#FFF8F0]',
     emoji: '👁️',
+    image: '/products/curator.png',
     concern: 'Стойкий люксовый макияж, идеальное распределение',
     isAvailable: true,
     details: 'Профессиональные моно-тени Curator от Hourglass. Известны своим невероятно мелким, невесомым помолом и пигментированностью. Легко наносятся, не скатываются в складку века и создают эффект дорогого бархатного или влажного металлического финиша.',
@@ -166,6 +175,7 @@ const products: Product[] = [
     description: 'Ambient Lighting Palette. Культовое финишное сияние и разглаживание кожи.',
     gradient: 'from-[#F7F4EF] via-[#E8C9A8] to-[#EDE6DB]',
     emoji: '🌟',
+    image: '/products/ambient-palette.png',
     concern: 'Тусклый цвет лица, видимые поры, неровный тон, отсутствие "Glow"',
     isAvailable: true,
     details: 'Культовое трио финишных пудр Ambient Lighting от Hourglass. Созданы по запатентованной фотолюминесцентной технологии. Мельчайшие пудры преломляют и рассеивают свет на лице, создавая эффект "мягкого фокуса", скрывают морщинки, поры и дарят коже роскошное холеное сияние дорогого спа-ухода.',
@@ -181,6 +191,7 @@ const products: Product[] = [
     description: 'Ambient Lighting Blush. Мягкий румянец со светоотражающими пигментами.',
     gradient: 'from-[#E8D5CE] via-[#EDE6DB] to-[#FFF8F0]',
     emoji: '🌸',
+    image: '/products/ambient-blush.png',
     concern: 'Бледность лица, плоский рельеф, уставший вид',
     isAvailable: true,
     details: 'Эксклюзивные румяна, сочетающие в себе пигмент румян и знаменитую светоотражающую пудру Ambient. Создают деликатный, многомерный румянец, который сливается с кожей, не подчеркивая шелушения и поры. Идеально подсвечивают щеки.',
@@ -270,6 +281,19 @@ const articles: Article[] = [
     content: 'Эффект "дорогой холеной кожи" (Glow Skin) — главный тренд голливудских красных дорожек. Он строится на идеальной подготовке кожи и рассеивании света. Сначала нанесите увлажняющую базу или крем Image Skincare SPF 30. Затем выполните легкое контурирование с помощью жидкого скульптора Charlotte Tilbury Hollywood Contour Wand, чтобы прорисовать естественные тени.\n\nФинальный штрих — легендарная финишная пудра Hourglass Ambient Lighting. Ее микросферы преломляют свет, стирая с лица поры, мелкие морщинки и усталость, создавая сияние, будто вы только что вернулись из элитного швейцарского спа.'
   }
 ];
+
+const ProductVisual = ({ product, large = false }: { product: Product; large?: boolean }) => {
+  if (product.image) {
+    return <img src={product.image} alt={`${product.brand} — ${product.name}`} className={`h-full w-full object-cover ${large ? 'scale-105' : ''}`} loading={large ? 'eager' : 'lazy'} />;
+  }
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center">
+      <span className={large ? 'text-6xl' : 'text-4xl'} aria-hidden="true">{product.emoji}</span>
+      <span className="mt-3 font-serif text-xs font-semibold uppercase tracking-widest text-[#1F1F1F]/70">{product.brand}</span>
+      <span className="mt-2 text-[9px] leading-relaxed text-[#4A4541]">{product.name}</span>
+    </div>
+  );
+};
 
 export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -407,6 +431,11 @@ export default function App() {
     return `https://t.me/beautysupply?text=${text}`;
   };
 
+  const getWhatsAppLink = (productName?: string) => {
+    const item = productName ? ` по товару «${productName}»` : '';
+    return `https://wa.me/?text=${encodeURIComponent(`Здравствуйте! Нужна консультация${item} на сайте Beauty Supply.`)}`;
+  };
+
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -460,7 +489,7 @@ export default function App() {
                 href="https://t.me/beautysupply"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-2.5 bg-[#1F1F1F] text-[#F7F4EF] hover:bg-[#C8A96D] text-xs font-bold uppercase tracking-wider rounded-full transition-colors shadow-lg shadow-black/10 focus-visible-ring shine-effect"
+                className="px-6 py-2.5 bg-[#229ED9] text-white hover:bg-[#168AC4] text-xs font-bold uppercase tracking-wider rounded-full transition-colors shadow-lg shadow-black/10 focus-visible-ring shine-effect"
               >
                 Заказать в Telegram
               </a>
@@ -526,11 +555,13 @@ export default function App() {
             <div className="md:col-span-7 space-y-8 text-left">
               <span className="inline-block px-4 py-1.5 border border-[#C8A96D]/40 text-[#C8A96D] text-xs font-bold uppercase tracking-widest rounded-full bg-white/50">
                 Premium Beauty E-commerce
+                <small className="block normal-case tracking-normal font-medium text-[9px] mt-0.5">Премиальный бьюти-магазин</small>
               </span>
               <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl font-light text-[#1F1F1F] leading-[1.1] tracking-tight">
                 Authentic Beauty <br />
                 <span className="font-semibold italic text-[#C8A96D]">from the USA</span>
               </h1>
+              <p className="-mt-5 font-serif text-sm italic text-[#A69C91]">Оригинальная косметика напрямую из США</p>
               <p className="text-[#4A4541] text-base sm:text-lg max-w-xl leading-relaxed">
                 Делаем для вас недоступное — доступным! Оригинальная уходовая и декоративная косметика премиум-класса напрямую из США. Только проверенные бренды и рабочие формулы.
               </p>
@@ -677,7 +708,7 @@ export default function App() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
-            <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Top Brands</span>
+            <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Top Brands</span><p className="text-[10px] text-[#A69C91] mt-1">Избранные премиальные бренды</p></div>
             <h2 className="font-serif text-3xl md:text-5xl font-light text-white">Премиальные Импортные Бренды</h2>
             <p className="text-[#A69C91] text-sm max-w-lg mx-auto">Прямые поставки из США гарантируют 100% оригинальность составов и текстур.</p>
           </div>
@@ -712,7 +743,7 @@ export default function App() {
               >
                 <div className="space-y-4">
                   <h3 className="font-serif text-2xl font-bold tracking-wide text-white">{brand.name}</h3>
-                  <p className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest italic">{brand.slogan}</p>
+                  <div><p className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest italic">{brand.slogan}</p><p className="text-[10px] text-[#A69C91] mt-1">Премиальный выбор для вашей красоты</p></div>
                   <p className="text-[#A69C91] text-xs leading-relaxed">{brand.desc}</p>
                 </div>
                 <button
@@ -736,7 +767,7 @@ export default function App() {
       <section id="catalog" className="py-20 md:py-28 bg-[#EDE6DB]/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
-            <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Our Collection</span>
+            <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Our Collection</span><p className="text-[10px] text-[#A69C91] mt-1">Наша тщательно отобранная коллекция</p></div>
             <h2 className="font-serif text-3xl md:text-5xl font-light">Каталог Продукции</h2>
             <p className="text-[#4A4541] text-sm max-w-xl mx-auto">
               Оригинальные товары в наличии на складе в Москве. Нажмите на любой товар, чтобы узнать его состав, способ применения и оформить быстрый заказ.
@@ -817,20 +848,19 @@ export default function App() {
                 >
                   {/* Photo area */}
                   <div className={`relative aspect-square bg-gradient-to-br ${product.gradient} p-6 flex flex-col justify-between`}>
-                    <div className="flex justify-between items-center">
+                    <div className="relative z-10 flex justify-between items-center">
                       <span className="px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full text-[8px] font-bold uppercase tracking-widest text-[#1F1F1F]">
-                        USA Brand
+                        Бренд из США
                       </span>
                       <span className="text-xl">{product.emoji}</span>
                     </div>
 
-                    <div className="w-24 h-32 bg-white/40 backdrop-blur-md rounded-xl shadow-inner border border-white/30 mx-auto flex flex-col items-center justify-center p-3 group-hover:scale-105 transition-transform duration-300">
-                      <span className="font-serif text-[10px] text-center font-bold text-[#1F1F1F]/70 leading-tight uppercase tracking-wider">{product.brand}</span>
-                      <span className="w-6 h-px bg-[#1F1F1F]/20 my-1.5"></span>
-                      <p className="text-[7px] text-center text-[#4A4541] leading-snug line-clamp-2">{product.name}</p>
+                    <div className="absolute inset-0 overflow-hidden">
+                      <ProductVisual product={product} />
                     </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/10 pointer-events-none"></div>
 
-                    <p className="text-[8px] text-center font-bold uppercase tracking-widest text-[#A69C91]">Детали</p>
+                    <p className="relative z-10 text-[8px] text-center font-bold uppercase tracking-widest text-white drop-shadow-sm">Детали</p>
                   </div>
 
                   {/* Body description */}
@@ -871,7 +901,7 @@ export default function App() {
           {/* Pre-order USP info block */}
           <div className="mt-16 bg-gradient-to-br from-[#1F1F1F] to-[#4A4541] rounded-3xl p-8 sm:p-12 text-[#F7F4EF] flex flex-col md:flex-row items-center justify-between gap-8 border border-white/5 shadow-2xl">
             <div className="space-y-4 max-w-xl text-left">
-              <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Custom Orders</span>
+              <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Custom Orders</span><p className="text-[10px] text-[#A69C91] mt-1">Индивидуальный выкуп под заказ</p></div>
               <h3 className="font-serif text-2xl sm:text-4xl font-light text-white leading-tight">Привезём абсолютно любой бьюти-товар из США под заказ!</h3>
               <p className="text-[#A69C91] text-xs sm:text-sm leading-relaxed">
                 Не нашли нужное средство, палетку или оттенок на сайте? Мы сделаем выкуп с Sephora USA или официальных сайтов брендов и доставим за 14–21 день.
@@ -881,7 +911,7 @@ export default function App() {
               href="https://t.me/beautysupply"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-4 bg-[#C8A96D] hover:bg-[#DCC8A3] text-[#1F1F1F] text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-300 hover:scale-105 inline-flex items-center gap-2 shadow-lg shadow-[#C8A96D]/10"
+              className="px-8 py-4 bg-[#229ED9] hover:bg-[#168AC4] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-300 hover:scale-105 inline-flex items-center gap-2 shadow-lg shadow-[#229ED9]/20"
             >
               Сделать спецзаказ в Telegram
             </a>
@@ -894,8 +924,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-6 space-y-6 text-left">
-              <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">About Us</span>
-              <h2 className="font-serif text-3xl sm:text-5xl font-light leading-tight">Curated with Expertise. <br />Chosen with Care.</h2>
+              <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">About Us</span><p className="text-[10px] text-[#A69C91] mt-1">О Beauty Supply</p></div>
+              <div><h2 className="font-serif text-3xl sm:text-5xl font-light leading-tight">Curated with Expertise. <br />Chosen with Care.</h2><p className="mt-2 text-xs text-[#A69C91]">Отобрано с экспертизой. Выбрано с заботой.</p></div>
               <div className="w-16 h-0.5 bg-[#C8A96D]"></div>
               
               <p className="text-sm text-[#4A4541] leading-relaxed">
@@ -960,7 +990,7 @@ export default function App() {
       <section id="reviews" className="py-20 md:py-28 bg-white border-y border-[#EDE6DB]/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
-            <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Real Customer Feedback</span>
+            <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Real Customer Feedback</span><p className="text-[10px] text-[#A69C91] mt-1">Настоящие отзывы наших клиентов</p></div>
             <h2 className="font-serif text-3xl md:text-5xl font-light">Клиенты о нас</h2>
             <p className="text-[#4A4541] text-sm max-w-md mx-auto">
               Честные отзывы с официальной страницы магазина на Avito (Рейтинг 5.0).
@@ -1001,7 +1031,7 @@ export default function App() {
       <section id="guide" className="py-20 md:py-28 bg-[#F7F4EF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4">
-            <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Beauty Guide</span>
+            <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">Beauty Guide</span><p className="text-[10px] text-[#A69C91] mt-1">Экспертные заметки о красоте</p></div>
             <h2 className="font-serif text-3xl md:text-5xl font-light">Полезный Бьюти-Гид</h2>
             <p className="text-[#4A4541] text-sm max-w-md mx-auto">
               Разбираемся в активах ухода и тонкостях макияжа вместе с нашими экспертами.
@@ -1090,7 +1120,7 @@ export default function App() {
             
             {/* Contact details */}
             <div className="md:col-span-5 space-y-8 text-left">
-              <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Contact Us</span>
+              <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Contact Us</span><p className="text-[10px] text-[#A69C91] mt-1">Свяжитесь с нами</p></div>
               <h2 className="font-serif text-3xl sm:text-5xl font-light leading-tight">Мы на связи</h2>
               <div className="w-16 h-0.5 bg-[#C8A96D]"></div>
               
@@ -1109,7 +1139,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-lg">💬</span>
-                  <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="hover:text-[#C8A96D] transition-colors font-semibold">@beautysupply (Telegram)</a>
+                  <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="hover:text-[#229ED9] transition-colors font-semibold">@beautysupply (Telegram)</a>
                 </div>
               </div>
 
@@ -1119,12 +1149,21 @@ export default function App() {
                   href="https://t.me/beautysupply"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-[#C8A96D] hover:bg-[#DCC8A3] text-[#1F1F1F] text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2"
+                  className="px-6 py-3 bg-[#229ED9] hover:bg-[#168AC4] text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2 shadow-lg shadow-[#229ED9]/20"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                   </svg>
                   Telegram
+                </a>
+                <a
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-[#25D366] hover:bg-[#1FB75A] text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2 shadow-lg shadow-[#25D366]/20"
+                >
+                  <span aria-hidden="true" className="text-base leading-none">◔</span>
+                  WhatsApp
                 </a>
               </div>
             </div>
@@ -1196,7 +1235,7 @@ export default function App() {
         </div>
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Your Premium Beauty Destination</span>
+          <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Your Premium Beauty Destination</span><p className="text-[10px] text-[#A69C91] mt-1">Ваше место для премиальной красоты</p></div>
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light leading-tight">
             Делаем для вас недоступное <br />
             <span className="font-semibold italic text-[#C8A96D]">— доступным!</span>
@@ -1238,7 +1277,7 @@ export default function App() {
               
               {/* Social icons */}
               <div className="flex gap-4 pt-2">
-                <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="Telegram">
+                <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#229ED9] hover:text-white flex items-center justify-center text-white transition-colors" aria-label="Telegram">
                   TG
                 </a>
                 <a href="https://vk.com/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="VK">
@@ -1344,20 +1383,18 @@ export default function App() {
             <div className={`md:col-span-5 bg-gradient-to-br ${selectedProduct.gradient} p-8 flex flex-col justify-between items-center relative min-h-[300px]`}>
               <div className="w-full flex justify-between">
                 <span className="px-3 py-1 bg-white/90 rounded-full text-[9px] font-bold uppercase tracking-widest text-[#1F1F1F]">
-                  Imported
+                  Импорт из США
                 </span>
                 <span className="text-3xl">{selectedProduct.emoji}</span>
               </div>
 
-              <div className="w-40 h-52 bg-white/50 backdrop-blur-md rounded-2xl shadow-xl border border-white/40 flex flex-col items-center justify-center p-4">
-                <span className="font-serif text-sm text-center font-bold text-[#1F1F1F]/70 uppercase tracking-widest leading-tight">{selectedProduct.brand}</span>
-                <span className="w-8 h-px bg-[#1F1F1F]/20 my-2.5"></span>
-                <span className="text-[10px] text-center text-[#4A4541] leading-relaxed font-medium">{selectedProduct.name}</span>
+              <div className="w-52 h-64 overflow-hidden bg-white/50 rounded-2xl shadow-xl border border-white/40">
+                <ProductVisual product={selectedProduct} large />
               </div>
 
               <div className="w-full text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">100% Original guaranteed</p>
-                <p className="text-[8px] text-black/40 mt-1">Batch checked</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">100% гарантия оригинальности</p>
+                <p className="text-[8px] text-black/40 mt-1">Батч-код проверен</p>
               </div>
             </div>
 
@@ -1409,12 +1446,22 @@ export default function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setSelectedProduct(null)}
-                    className="px-6 py-3.5 bg-[#1F1F1F] hover:bg-[#C8A96D] text-white hover:text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-lg transition-colors"
+                    className="px-6 py-3.5 bg-[#229ED9] hover:bg-[#168AC4] text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-lg shadow-[#229ED9]/20 transition-colors"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                     </svg>
                     Купить в Telegram
+                  </a>
+                  <a
+                    href={getWhatsAppLink(selectedProduct.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setSelectedProduct(null)}
+                    className="px-6 py-3.5 bg-[#25D366] hover:bg-[#1FB75A] text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20 transition-colors"
+                  >
+                    <span aria-hidden="true" className="text-base leading-none">◔</span>
+                    Купить в WhatsApp
                   </a>
                 </div>
               </div>

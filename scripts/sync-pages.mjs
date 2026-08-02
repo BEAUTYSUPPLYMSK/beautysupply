@@ -6,7 +6,7 @@
  * Usage: node scripts/sync-pages.mjs
  * Or:    npm run pages:sync
  */
-import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -31,6 +31,11 @@ writeFileSync(join(docsDir, ".nojekyll"), "");
 copyFileSync(distHtml, join(docsDir, "404.html"));
 
 // Static public assets that Vite copies into dist/ (if any)
+// Keep catalog photography with the Pages artifact too; product cards use these paths.
+const productsFromDist = join(root, "dist", "products");
+if (existsSync(productsFromDist)) {
+  cpSync(productsFromDist, join(docsDir, "products"), { recursive: true });
+}
 const staticAssets = ["og-cover.svg", "robots.txt", "sitemap.xml", "favicon.svg"];
 for (const name of staticAssets) {
   const from = join(publicDir, name);
