@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ivory: #FDFBF7;
-  --color-ivory-dark: #F5F0E8;
-  --color-charcoal: #2D2926;
+  --color-ivory: #F7F4EF;
+  --color-ivory-dark: #EDE6DB;
+  --color-charcoal: #1F1F1F;
   --color-charcoal-light: #4A4541;
-  --color-rose-gold: #D4A574;
-  --color-rose-gold-light: #E8C9A8;
+  --color-rose-gold: #C8A96D;
+  --color-rose-gold-light: #DCC8A3;
   --color-blush: #E8D5CE;
   --color-champagne: #F7E7CE;
   --color-cream: #FFF8F0;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
@@ -40,13 +40,13 @@ body {
 }
 
 .glass {
-  background: rgba(253, 251, 247, 0.85);
+  background: rgba(247, 244, 239, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-rose-gold) 0%, var(--color-blush) 50%, var(--color-champagne) 100%);
+  background: linear-gradient(135deg, var(--color-rose-gold) 0%, var(--color-rose-gold-light) 50%, var(--color-blush) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
