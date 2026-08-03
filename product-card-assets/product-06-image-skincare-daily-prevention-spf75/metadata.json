@@ -1,0 +1,35 @@
+{
+  "product": {
+    "index": 6,
+    "slug": "image-skincare-daily-prevention-spf75",
+    "folder": "Image Skincare DAILY PREVENTION SPF 75"
+  },
+  "final_cards": {
+    "hero": {
+      "file": "final-cards/hero.webp",
+      "resolution": "2048x2048"
+    },
+    "angle": {
+      "file": "final-cards/angle.webp",
+      "resolution": "2048x2048"
+    },
+    "lifestyle": {
+      "file": "final-cards/lifestyle.webp",
+      "resolution": "2048x2048"
+    },
+    "detail": {
+      "file": "final-cards/detail.webp",
+      "resolution": "2048x2048"
+    },
+    "wow": {
+      "file": "final-cards/wow.webp",
+      "resolution": "2048x2048"
+    }
+  },
+  "qa": {
+    "all_files_exist": true,
+    "all_images_square": true,
+    "min_resolution_passed": true,
+    "needs_manual_review": false
+  }
+}
