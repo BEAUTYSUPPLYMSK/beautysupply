@@ -6,7 +6,7 @@
  * Usage: node scripts/sync-pages.mjs
  * Or:    npm run pages:sync
  */
-import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync, cpSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -34,6 +34,8 @@ copyFileSync(distHtml, join(docsDir, "404.html"));
 // Keep catalog photography with the Pages artifact too; product cards use these paths.
 const productsFromDist = join(root, "dist", "products");
 if (existsSync(productsFromDist)) {
+  // Wipe stale artifacts first so removed/renamed images never linger in docs/.
+  rmSync(join(docsDir, "products"), { recursive: true, force: true });
   cpSync(productsFromDist, join(docsDir, "products"), { recursive: true });
 }
 const staticAssets = ["og-cover.svg", "robots.txt", "sitemap.xml", "favicon.svg"];

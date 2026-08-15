@@ -1,22 +1,9 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { formatPrice, products, type Product, type ProductCategory } from './data/products';
 
-// Interfaces
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  price: number;
-  category: string;
-  description: string;
-  gradient: string;
-  emoji: string;
-  image?: string;
-  details: string;
-  ingredients: string;
-  usage: string;
-  concern: string;
-  isAvailable: boolean;
-}
+// Contact / channel destinations (canonical handles from the reference build)
+const TELEGRAM_BOT = 'https://t.me/BEAUTYSUPPLYMSKBOT';
+const TELEGRAM_CHANNEL = 'https://t.me/beautysupplymsk';
 
 interface Review {
   name: string;
@@ -36,216 +23,26 @@ interface Article {
   readTime: string;
 }
 
-// 12 Products Data (combining Avito prices and clinical info)
-const products: Product[] = [
-  {
-    id: 1,
-    name: 'Лифтинг-крем для тела VOL.U.lift',
-    brand: 'Image Skincare',
-    price: 7799,
-    category: 'body',
-    description: 'Интенсивное укрепление, лифтинг кожи тела и восстановление упругости.',
-    gradient: 'from-[#F3E5D8] via-[#E8D5CE] to-[#F7E7CE]',
-    emoji: '🧴',
-    image: '/products/volu-body.png',
-    concern: 'Потеря тонуса, дряблость, сухость кожи тела',
-    isAvailable: true,
-    details: 'Ультра-насыщенный лифтинг-крем для тела разработан для восстановления плотности и тонуса кожи. Идеально подходит для зон с выраженной потерей эластичности (шея, декольте, внутренняя поверхность рук и бедер, живот). Стимулирует выработку коллагена, глубоко увлажняет и разглаживает микрорельеф.',
-    ingredients: 'Укрепляющий комплекс пептидов, органическое масло ши, масло сладкого миндаля, экстракт центеллы азиатской, витамин E, гиалуроновая кислота.',
-    usage: 'Наносите обильное количество крема на чистую сухую кожу тела дважды в день (утром и вечером). Особое внимание уделяйте проблемным зонам с пониженным тонусом. Массируйте круговыми движениями снизу вверх до полного впитывания.'
-  },
-  {
-    id: 2,
-    name: 'VOL.U.lift (лицо)',
-    brand: 'Image Skincare',
-    price: 11599,
-    category: 'face',
-    description: 'Премиальный волюмайзер для лица. Восстанавливает объем и четкость контуров.',
-    gradient: 'from-[#E8C9A8] via-[#F7E7CE] to-[#FFF8F0]',
-    emoji: '✨',
-    image: '/products/volu-face.png',
-    concern: 'Глубокие морщины, потеря объема лица, птоз, дегидратация',
-    isAvailable: true,
-    details: 'Инновационный ремоделирующий крем-волюмайзер для лица. Работает как безоперационный липофилинг: заполняет морщины изнутри, восстанавливает утраченные объемы скул и щек, подтягивает овал лица. Обеспечивает мощный anti-age эффект и глубокое клеточное питание.',
-    ingredients: 'Эксклюзивный комплекс пептидов-волюмайзеров, растительные стволовые клетки яблока, экстракт комбучи, стабильный витамин C, экстракт морских водорослей.',
-    usage: 'Наносите тонким слоем на предварительно очищенную кожу лица, шеи и декольте легкими похлопывающими движениями по массажным линиям. Рекомендуется использовать ежедневно утром и вечером в сочетании с омолаживающей сывороткой.'
-  },
-  {
-    id: 3,
-    name: 'Восстанавливающий ночной крем с витамином C',
-    brand: 'Image Skincare',
-    price: 7799,
-    category: 'face',
-    description: 'Культовый крем Vital C. Глубокое увлажнение, борьба с тусклостью и куперозом.',
-    gradient: 'from-[#FDFBF7] via-[#FFF8F0] to-[#E8C9A8]',
-    emoji: '🍊',
-    image: '/products/vital-c.png',
-    concern: 'Сухость, тусклый цвет лица, купероз, розацеа, фотостарение',
-    isAvailable: true,
-    details: 'Бестселлер бренда Image Skincare из серии Vital C. Ночной крем с высокой концентрацией стабильных форм витамина C и антиоксидантов. За ночь полностью реанимирует уставшую, обезвоженную кожу, гасит воспаления, укрепляет стенки капилляров при куперозе и дарит лицу невероятное утреннее сияние.',
-    ingredients: '20% смесь трех стабильных форм витамина С (аскорбилпальмитат, магния аскорбилфосфат, аскорбилфосфат натрия), витамин А (ретинилпальмитат), гиалуроновая кислота, экстракт семян винограда, супероксиддисмутаза.',
-    usage: 'Вечером нанесите небольшое количество крема на очищенную кожу лица и шеи. Равномерно распределите. Для максимального эффекта против сухости наносите после увлажняющей сыворотки Vital C Hydrating Anti-Aging Serum.'
-  },
-  {
-    id: 4,
-    name: 'Ночной крем с ретинолом 0.3%',
-    brand: 'Image Skincare',
-    price: 8000,
-    category: 'face',
-    description: 'Ageless Total Retinol-A Crème. Мощное обновление клеток, борьба с акне и морщинами.',
-    gradient: 'from-[#E8D5CE] via-[#EDE6DB] to-[#FDFBF7]',
-    emoji: '🌙',
-    image: '/products/retinol.png',
-    concern: 'Возрастные морщины, гиперпигментация, постакне, неровный рельеф',
-    isAvailable: true,
-    details: 'Высокоэффективный ночной крем с инкапсулированным ретинолом 0.3%. Уникальная система доставки позволяет ретинолу проникать глубоко в дерму, запуская ускоренное обновление клеток без раздражения эпидермиса. Разглаживает заломы, осветляет пигментные пятна и следы постакне, сужает поры.',
-    ingredients: 'Инкапсулированный ретинол 0.3%, гликолевая кислота, молочная кислота, пептидный комплекс (пальмитоил олигопептид), гиалуроновая кислота, экстракт огурца, масло ши.',
-    usage: 'Применяйте строго вечером. Очистите лицо, просушите и нанесите небольшую горошину крема, избегая области вокруг глаз. Вводите в уход постепенно: 1-2 раза в неделю в первые две недели, затем увеличивайте частоту. Утром обязательно наносите солнцезащитный крем SPF 30 или SPF 75.'
-  },
-  {
-    id: 5,
-    name: 'Увлажняющий дневной крем SPF 30 Daily Prevention',
-    brand: 'Image Skincare',
-    price: 5200,
-    category: 'spf',
-    description: 'Новая премиальная линейка. 100% минеральные фильтры, идеальная база под макияж.',
-    gradient: 'from-[#DCC8A3] via-[#EDE6DB] to-[#F7F4EF]',
-    emoji: '☀️',
-    image: '/products/spf30.png',
-    concern: 'УФ-излучение, фотостарение, сухость кожи, пигментация',
-    isAvailable: true,
-    details: 'Премиальный солнцезащитный увлажняющий крем нового поколения из линии Daily Prevention. Содержит только безопасные физические минеральные фильтры (оксид цинка), которые отражают весь спектр UVA/UVB лучей. Не оставляет белого налета, интенсивно увлажняет кожу и служит безупречной базой под люксовые пудры и тона.',
-    ingredients: 'Оксид цинка (физический фильтр), запатентованный комплекс антиоксидантов, экстракт зеленого чая, сок алоэ вера, гиалуроновая кислота, масло арганы.',
-    usage: 'Наносите обильное количество крема на лицо и открытые участки кожи за 15 минут до выхода на улицу. Распределите мягкими движениями. При необходимости обновляйте каждые 2 часа при нахождении на активном солнце.'
-  },
-  {
-    id: 6,
-    name: 'Усиленный смарт-крем SPF 75',
-    brand: 'Image Skincare',
-    price: 6000,
-    category: 'spf',
-    description: 'Максимальная защита кожи после пилингов, лазера и в горах.',
-    gradient: 'from-[#EDE6DB] via-[#F7F4EF] to-[#E8C9A8]',
-    emoji: '🛡️',
-    image: '/products/spf75.png',
-    concern: 'Экстремальное солнце, гиперчувствительность после процедур, пигментные пятна',
-    isAvailable: true,
-    details: 'Ультра-защитный дневной смарт-крем с фактором SPF 75. Разработан для максимальной защиты поврежденной, чувствительной и подвергшейся агрессивным косметическим процедурам (пилинги, лазерная шлифовка) кожи. Блокирует 99% излучения, предотвращает появление гиперпигментации и рубцов.',
-    ingredients: 'Оксид цинка, титановые микросферы, комплекс фотосом и роксисом (восстановление ДНК клеток под действием света), витамин C, пантенол, аллантоин.',
-    usage: 'Равномерно нанесите на лицо и шею после очищения и сыворотки утром. Применяйте каждый раз после агрессивных салонных процедур перед выходом на улицу, даже в пасмурную погоду.'
-  },
-  {
-    id: 7,
-    name: 'Pillow Talk тени',
-    brand: 'Charlotte Tilbury',
-    price: 7500,
-    category: 'makeup',
-    description: 'Культовая люксовая палетка из 4 оттенков. Легендарный нежный нюд.',
-    gradient: 'from-[#E8D5CE] via-[#FFF8F0] to-[#E8C9A8]',
-    emoji: '🎨',
-    image: '/products/pillow-talk.png',
-    concern: 'Нюдовый макияж, праздничный образ, роскошный финиш',
-    isAvailable: true,
-    details: 'Знаменитая четырехцветная палетка теней Luxury Palette в оттенке Pillow Talk от звездного визажиста Шарлотты Тилбери. Содержит идеально подобранные пудровые текстуры: от сатинового шампанского до матового розово-коричневого и сверкающего розового золота. Мягко тушуются и держатся весь день.',
-    ingredients: 'Микронизированная слюда, премиальные перламутровые пигменты, растительные масла для мягкого скольжения.',
-    usage: 'Используйте кисть или аппликатор. Шаг 1: Нанесите оттенок Prime на все веко. Шаг 2: Выделите складку оттенком Enhance. Шаг 3: Добавьте глубины во внешний уголок с помощью Smoke. Шаг 4: Нанесите пальцем мерцающий Pop в центр века для вечернего сияния.'
-  },
-  {
-    id: 8,
-    name: 'Тени',
-    brand: 'Hourglass',
-    price: 6500,
-    category: 'makeup',
-    description: 'Curator Single Eyeshadow. Сверхмелкий помол и шелковистая текстура.',
-    gradient: 'from-[#EDE6DB] via-[#F7E7CE] to-[#FFF8F0]',
-    emoji: '👁️',
-    image: '/products/curator.png',
-    concern: 'Стойкий люксовый макияж, идеальное распределение',
-    isAvailable: true,
-    details: 'Профессиональные моно-тени Curator от Hourglass. Известны своим невероятно мелким, невесомым помолом и пигментированностью. Легко наносятся, не скатываются в складку века и создают эффект дорогого бархатного или влажного металлического финиша.',
-    ingredients: 'Слюда высокой степени очистки, органические тальки без асбеста, минеральные пигменты.',
-    usage: 'Наносите сухой кистью для мягкой дневной тушевки или влажной кистью для создания глубокого, зеркального металлического финиша.'
-  },
-  {
-    id: 9,
-    name: 'Палетка',
-    brand: 'Hourglass',
-    price: 7500,
-    category: 'makeup',
-    description: 'Ambient Lighting Palette. Культовое финишное сияние и разглаживание кожи.',
-    gradient: 'from-[#F7F4EF] via-[#E8C9A8] to-[#EDE6DB]',
-    emoji: '🌟',
-    image: '/products/ambient-palette.png',
-    concern: 'Тусклый цвет лица, видимые поры, неровный тон, отсутствие "Glow"',
-    isAvailable: true,
-    details: 'Культовое трио финишных пудр Ambient Lighting от Hourglass. Созданы по запатентованной фотолюминесцентной технологии. Мельчайшие пудры преломляют и рассеивают свет на лице, создавая эффект "мягкого фокуса", скрывают морщинки, поры и дарят коже роскошное холеное сияние дорогого спа-ухода.',
-    ingredients: 'Высокотехнологичный фотолюминесцентный порошок, масло арганы, оксиды железа.',
-    usage: 'Наносите большой пушистой кистью на все лицо в качестве финального шага макияжа после тонального крема и консилера. Смешивайте оттенки или используйте по отдельности как пудру, хайлайтер и деликатный бронзер.'
-  },
-  {
-    id: 10,
-    name: 'Румяна',
-    brand: 'Hourglass',
-    price: 3700,
-    category: 'makeup',
-    description: 'Ambient Lighting Blush. Мягкий румянец со светоотражающими пигментами.',
-    gradient: 'from-[#E8D5CE] via-[#EDE6DB] to-[#FFF8F0]',
-    emoji: '🌸',
-    image: '/products/ambient-blush.png',
-    concern: 'Бледность лица, плоский рельеф, уставший вид',
-    isAvailable: true,
-    details: 'Эксклюзивные румяна, сочетающие в себе пигмент румян и знаменитую светоотражающую пудру Ambient. Создают деликатный, многомерный румянец, который сливается с кожей, не подчеркивая шелушения и поры. Идеально подсвечивают щеки.',
-    ingredients: 'Органические пигменты, фотолюминофор, масло ши.',
-    usage: 'Улыбнитесь и нанесите румяна пушистой скошенной кистью на «яблочки» щек, растушевывая по направлению к вискам.'
-  },
-  {
-    id: 11,
-    name: 'Контуринг',
-    brand: 'Charlotte Tilbury',
-    price: 3500,
-    category: 'makeup',
-    description: 'Hollywood Contour Wand. Знаменитый жидкий скульптор для идеальных скул.',
-    gradient: 'from-[#EDE6DB] via-[#E8C9A8] to-[#F7F4EF]',
-    emoji: '🖌️',
-    concern: 'Круглое лицо, отсутствие скульптурности, тусклый плоский макияж',
-    isAvailable: true,
-    details: 'Легендарный жидкий скульптор с мягким поролоновым аппликатором-подушечкой. Обладает идеальным холодным серо-коричневым оттенком без рыжины, имитирующим естественную тень на лице. Тает на коже, легко тушуется даже пальцем и создает точеные голливудские скулы.',
-    ingredients: 'Жидкие силиконы нового поколения, пигменты холодного спектра, микроскопические светофильтры.',
-    usage: 'Поверните дозатор в положение ON, мягко сожмите тюбик и нанесите точечно 2-3 капли под скуловую кость, на виски, боковые стороны носа и линию челюсти. Растушуйте кистью, спонжем или подушечками пальцев. Верните дозатор в положение OFF после использования.'
-  },
-  {
-    id: 12,
-    name: 'Restoring Youth Serum',
-    brand: 'Image MD',
-    price: 10800,
-    category: 'face',
-    description: 'Restoring Youth Serum. Высококонцентрированная сыворотка с пептидами и ретинолом.',
-    gradient: 'from-[#DCC8A3] via-[#E8D5CE] to-[#F7F4EF]',
-    emoji: '💧',
-    concern: 'Птоз, возрастные морщины, потеря упругости, тусклость, неровный тон',
-    isAvailable: true,
-    details: 'Премиальная омолаживающая сыворотка молодости из клинической линии Image MD. Содержит уникальный коктейль из инкапсулированного ретинола, стабильной формы витамина C, кислот и мощных пептидов последнего поколения. Глубоко омолаживает, стимулирует регенерацию клеток, разглаживает морщины и укрепляет овал лица.',
-    ingredients: 'Инкапсулированный ретинол (медленное высвобождение), аскорбилфосфат натрия (витамин C), пептидный комплекс (Matrixyl Synthe 6), гликолевая кислота, растительные стволовые клетки арганы.',
-    usage: 'Наносите 2-3 капли сыворотки на очищенную кожу лица и шеи вечером перед использованием ночного крема. При первом применении может ощущаться легкое покалывание — это нормальная реакция на кислоты и ретинол. Днем обязательно используйте крем с SPF.'
-  }
-];
-
-// Categories
-const categories = [
+// Categories (matches the catalog schema: care | spf | makeup)
+const categories: { id: 'all' | ProductCategory; name: string }[] = [
   { id: 'all', name: 'Все товары' },
-  { id: 'face', name: 'Уход за лицом' },
-  { id: 'body', name: 'Уход за телом' },
+  { id: 'care', name: 'Уход' },
   { id: 'spf', name: 'SPF-защита' },
-  { id: 'makeup', name: 'Профессиональный макияж' }
+  { id: 'makeup', name: 'Макияж' },
 ];
 
-// Real Reviews
+// Decorative gradient per category (kept for the premium card backdrop)
+const categoryGradient: Record<ProductCategory, string> = {
+  care: 'from-[#F3E5D8] via-[#E8D5CE] to-[#F7E7CE]',
+  spf: 'from-[#DCC8A3] via-[#EDE6DB] to-[#F7F4EF]',
+  makeup: 'from-[#E8D5CE] via-[#FFF8F0] to-[#E8C9A8]',
+};
+
+// Real Reviews (products aligned with the actual catalog)
 const reviews: Review[] = [
-  { name: 'Юля', date: '2 мая 2026', product: 'Gisou маска для волос 230', text: 'Спасибо!⚘️⚘️⚘️ Штрих-код пробивается, оригинальное средство! Доставка за 2 дня в Питер.' },
-  { name: 'Анастасия', date: '22 апреля 2026', product: 'Gisou масло для губ', text: 'Все отлично) Спасибо большое ☺️ Быстро ответили в Телеграм, проконсультировали.' },
-  { name: 'Елена', date: '15 марта 2026', product: 'Image Skincare SPF 75', text: 'Получила быстрее, чем ожидала. Всё упаковано качественно, оригинальность подтверждается кодом на коробке.' },
-  { name: 'Дарья', date: '28 февраля 2026', product: 'Charlotte Tilbury Pillow Talk', text: 'Долго искала эту палетку. Продавец помог с выбором, ответил на все вопросы. Рекомендую!' },
-  { name: 'Марина', date: '10 февраля 2026', product: 'Hourglass палетка', text: 'Впервые заказываю здесь. Всё чётко: от консультации до доставки. Товар как на фото!' }
+  { name: 'Юля', date: '14 мая', product: 'IMAGE Skincare SPF 30', text: 'Отличный продавец! Косметика — оригинал из США, упаковано всё идеально. Доставка через Авито быстро дошла. Спасибо огромное, буду заказывать ещё!' },
+  { name: 'Анастасия', date: '20 июня', product: 'Charlotte Tilbury Pillow Talk', text: 'Посылка пришла быстро, оригинал Шарлотты в идеальном состоянии. Вся продукция свежая, batch-коды проверила. Однозначно рекомендую продавца.' },
+  { name: 'Елена', date: '2 июля', product: 'Hourglass Ambient Palette', text: 'Прекрасный сервис и консультация. Помогли подобрать оттенок. Косметика супер качества из Штатов.' },
 ];
 
 // Rich SEO Articles (Beauty Guide)
@@ -258,7 +55,7 @@ const articles: Article[] = [
     emoji: '☀️',
     gradient: 'from-[#FDFBF7] via-[#FFF8F0] to-[#E8C9A8]',
     readTime: '5 мин',
-    content: 'Солнцезащитные кремы стали обязательным элементом ухода за кожей. Но как выбрать идеальный фильтр? Физические (минеральные) фильтры, такие как оксид цинка и диоксид титана, работают на поверхности кожи как микро-зеркала, отражая и рассеивая UVA и UVB лучи. Они гипоаллергенны и идеальны для чувствительной кожи, а также после косметологических пилингов. Химические фильтры нового поколения поглощают УФ-лучи и превращают их в тепловую энергию. \n\nВ нашей новой линейке Image Skincare Daily Prevention SPF 30 мы используем усовершенствованную физическую минеральную защиту, которая ложится тончайшим шелковым слоем без белого налета и липкости, обеспечивая мощную профилактику фотостарения и служа идеальной базой под ваш макияж.'
+    content: 'Солнцезащитные кремы стали обязательным элементом ухода за кожей. Но как выбрать идеальный фильтр? Физические (минеральные) фильтры, такие как оксид цинка и диоксид титана, работают на поверхности кожи как микро-зеркала, отражая и рассеивая UVA и UVB лучи. Они гипоаллергенны и идеальны для чувствительной кожи, а также после косметологических пилингов. Химические фильтры нового поколения поглощают УФ-лучи и превращают их в тепловую энергию. \n\nВ нашей линейке Image Skincare Daily Prevention SPF 30 мы используем усовершенствованную физическую минеральную защиту, которая ложится тончайшим шелковым слоем без белого налета и липкости, обеспечивая мощную профилактику фотостарения и служа идеальной базой под ваш макияж.'
   },
   {
     id: 2,
@@ -283,20 +80,11 @@ const articles: Article[] = [
 ];
 
 const ProductVisual = ({ product, large = false }: { product: Product; large?: boolean }) => {
-  if (product.image) {
-    return <img src={product.image} alt={`${product.brand} — ${product.name}`} className={`h-full w-full object-cover ${large ? 'scale-105' : ''}`} loading={large ? 'eager' : 'lazy'} />;
-  }
-  return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center">
-      <span className={large ? 'text-6xl' : 'text-4xl'} aria-hidden="true">{product.emoji}</span>
-      <span className="mt-3 font-serif text-xs font-semibold uppercase tracking-widest text-[#1F1F1F]/70">{product.brand}</span>
-      <span className="mt-2 text-[9px] leading-relaxed text-[#4A4541]">{product.name}</span>
-    </div>
-  );
+  return <img src={product.image} alt={`${product.brand} — ${product.name}`} className={`h-full w-full object-cover ${large ? 'scale-105' : ''}`} loading={large ? 'eager' : 'lazy'} />;
 };
 
 export default function App() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | ProductCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -401,11 +189,8 @@ export default function App() {
       triggerToast('Введите корректный email для подписки.');
       return;
     }
-    // Static site: no backend — route interest to Telegram with prefilled context
-    const text = encodeURIComponent(
-      `Здравствуйте! Хочу получать новости Beauty Supply. Мой email: ${trimmed}`
-    );
-    window.open(`https://t.me/beautysupply?text=${text}`, '_blank', 'noopener,noreferrer');
+    // Static site: no backend — route interest to the official Telegram bot.
+    window.open(`${TELEGRAM_BOT}?start=${encodeURIComponent(`subscribe_${trimmed}`)}`, '_blank', 'noopener,noreferrer');
     setNewsletterEmail('');
     triggerToast('Открываем Telegram — там самые быстрые новости о выкупах.');
   };
@@ -419,28 +204,21 @@ export default function App() {
     }, 5000);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU').format(price);
-  };
-
-  // Pre-filled Messenger links
-  const getTelegramLink = (productName: string, price: number) => {
-    const text = encodeURIComponent(
-      `Здравствуйте! Хочу заказать на сайте beautysupply.shop товар: ${productName} за ${price} руб. Пожалуйста, оформите доставку.`
-    );
-    return `https://t.me/beautysupply?text=${text}`;
-  };
-
-  const getWhatsAppLink = (productName?: string) => {
-    const item = productName ? ` по товару «${productName}»` : '';
-    return `https://wa.me/?text=${encodeURIComponent(`Здравствуйте! Нужна консультация${item} на сайте Beauty Supply.`)}`;
+  // Pre-filled order link to the official Telegram bot (SKU-specific payload)
+  const getOrderLink = (product: Product, action: 'order' | 'consult' = 'order') => {
+    const payload = `${action}_${product.slug.replace(/-/g, '_')}`;
+    return `${TELEGRAM_BOT}?start=${payload}`;
   };
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = query.length === 0 ||
+      product.name.toLowerCase().includes(query) ||
+      product.ruName.toLowerCase().includes(query) ||
+      product.brand.toLowerCase().includes(query) ||
+      product.line.toLowerCase().includes(query) ||
+      product.summary.toLowerCase().includes(query);
     return matchesCategory && matchesSearch;
   });
 
@@ -486,7 +264,7 @@ export default function App() {
             {/* Chat button */}
             <div className="hidden lg:flex items-center">
               <a
-                href="https://t.me/beautysupply"
+                href={TELEGRAM_BOT}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-2.5 bg-[#229ED9] text-white hover:bg-[#168AC4] text-xs font-bold uppercase tracking-wider rounded-full transition-colors shadow-lg shadow-black/10 focus-visible-ring shine-effect"
@@ -530,7 +308,7 @@ export default function App() {
             <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold tracking-wider uppercase text-[#4A4541] focus-visible-ring rounded">Контакты</a>
             <div className="pt-2 px-3">
               <a
-                href="https://t.me/beautysupply"
+                href={TELEGRAM_BOT}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full text-center inline-block px-6 py-3 bg-[#1F1F1F] text-[#F7F4EF] text-xs font-bold uppercase tracking-wider rounded-full focus-visible-ring"
@@ -579,7 +357,7 @@ export default function App() {
                   О магазине
                 </a>
               </div>
-              
+
               {/* Partner Logos */}
               <div className="pt-8 border-t border-[#EDE6DB]">
                 <p className="text-xs font-bold uppercase tracking-wider text-[#A69C91] mb-4">Наши Флагманские Бренды</p>
@@ -670,22 +448,21 @@ export default function App() {
             <div className="w-16 h-0.5 bg-[#C8A96D] mx-auto mt-4"></div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: 'Уход за лицом', desc: 'Кремы, сыворотки, ретинол и омоложение', emoji: '✨', categoryId: 'face', gradient: 'from-[#E8C9A8] to-[#FFF8F0]' },
-              { title: 'Уход за телом', desc: 'Укрепляющие и подтягивающие лифтинг-кремы', emoji: '🧴', categoryId: 'body', gradient: 'from-[#F3E5D8] to-[#E8D5CE]' },
+              { title: 'Уход за кожей', desc: 'Кремы, сыворотки, ретинол и омоложение', emoji: '✨', categoryId: 'care', gradient: 'from-[#E8C9A8] to-[#FFF8F0]' },
               { title: 'SPF-защита', desc: 'Минеральные премиальные солнцезащитные кремы', emoji: '☀️', categoryId: 'spf', gradient: 'from-[#DCC8A3] to-[#EDE6DB]' },
               { title: 'Профессиональный макияж', desc: 'Трендовые палетки, контуринг и румяна', emoji: '🎨', categoryId: 'makeup', gradient: 'from-[#E8D5CE] to-[#FDFBF7]' }
             ].map((cat, idx) => (
               <a
                 href="#catalog"
                 key={idx}
-                onClick={() => setSelectedCategory(cat.categoryId)}
+                onClick={() => setSelectedCategory(cat.categoryId as 'all' | ProductCategory)}
                 className="group relative h-72 bg-gradient-to-br rounded-2xl p-8 flex flex-col justify-between overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-[#EDE6DB]/30"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} opacity-90 group-hover:scale-105 transition-transform duration-500`}></div>
                 <div className="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
-                
+
                 <div className="relative z-10 text-4xl bg-white/70 w-14 h-14 rounded-2xl flex items-center justify-center shadow-md shadow-black/5 group-hover:scale-110 transition-transform">
                   {cat.emoji}
                 </div>
@@ -717,7 +494,7 @@ export default function App() {
             {[
               {
                 name: 'IMAGE Skincare',
-                search: 'Image Skincare',
+                search: 'Image',
                 slogan: 'Clinical. Clean. Conscious.',
                 desc: 'Профессиональная космецевтика, созданная пластическими хирургами и дерматологами. Умные формулы с доказанным действием (ретинол, стабильный витамин C, пептиды).',
                 bg: 'bg-white/5 border border-white/10'
@@ -833,10 +610,10 @@ export default function App() {
             >
               {filteredProducts.map((product) => (
                 <article
-                  key={product.id}
+                  key={product.slug}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Открыть карточку товара: ${product.name}`}
+                  aria-label={`Открыть карточку товара: ${product.ruName}`}
                   onClick={() => setSelectedProduct(product)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -847,12 +624,16 @@ export default function App() {
                   className="group cursor-pointer focus-visible-ring bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-[#EDE6DB]/30 transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Photo area */}
-                  <div className={`relative aspect-square bg-gradient-to-br ${product.gradient} p-6 flex flex-col justify-between`}>
+                  <div className={`relative aspect-square bg-gradient-to-br ${categoryGradient[product.category]} p-6 flex flex-col justify-between`}>
                     <div className="relative z-10 flex justify-between items-center">
                       <span className="px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full text-[8px] font-bold uppercase tracking-widest text-[#1F1F1F]">
                         Бренд из США
                       </span>
-                      <span className="text-xl">{product.emoji}</span>
+                      {product.badge && (
+                        <span className="px-2.5 py-1 bg-[#1F1F1F]/80 text-white rounded-full text-[8px] font-bold uppercase tracking-widest">
+                          {product.badge}
+                        </span>
+                      )}
                     </div>
 
                     <div className="absolute inset-0 overflow-hidden">
@@ -865,16 +646,19 @@ export default function App() {
 
                   {/* Body description */}
                   <div className="p-4 sm:p-5 space-y-2">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#C8A96D]">{product.brand}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#C8A96D]">{product.brand} · {product.line}</p>
                     <h3 className="font-serif font-semibold text-[#1F1F1F] text-sm md:text-base leading-snug line-clamp-2 min-h-[40px]">
-                      {product.name}
+                      {product.ruName}
                     </h3>
-                    <p className="text-xs text-[#A69C91] line-clamp-1">{product.concern}</p>
-                    
+                    <p className="text-xs text-[#A69C91] line-clamp-1">{product.summary}</p>
+
                     <div className="flex items-center justify-between pt-2 border-t border-[#F7F4EF]">
-                      <span className="text-sm sm:text-base font-bold text-[#1F1F1F]">
-                        {formatPrice(product.price)} ₽
-                      </span>
+                      <div>
+                        <span className="text-sm sm:text-base font-bold text-[#1F1F1F]">
+                          {formatPrice(product.price)}
+                        </span>
+                        <span className="block text-[9px] text-[#A69C91]">{product.volume}</span>
+                      </div>
                       <span className="px-4 py-2 bg-[#1F1F1F] text-[#F7F4EF] group-hover:bg-[#C8A96D] text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors">
                         Подробнее
                       </span>
@@ -908,7 +692,7 @@ export default function App() {
               </p>
             </div>
             <a
-              href="https://t.me/beautysupply"
+              href={`${TELEGRAM_BOT}?start=preorder_usa`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-4 bg-[#229ED9] hover:bg-[#168AC4] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-300 hover:scale-105 inline-flex items-center gap-2 shadow-lg shadow-[#229ED9]/20"
@@ -927,7 +711,7 @@ export default function App() {
               <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">About Us</span><p className="text-[10px] text-[#A69C91] mt-1">О Beauty Supply</p></div>
               <div><h2 className="font-serif text-3xl sm:text-5xl font-light leading-tight">Curated with Expertise. <br />Chosen with Care.</h2><p className="mt-2 text-xs text-[#A69C91]">Отобрано с экспертизой. Выбрано с заботой.</p></div>
               <div className="w-16 h-0.5 bg-[#C8A96D]"></div>
-              
+
               <p className="text-sm text-[#4A4541] leading-relaxed">
                 Beauty Supply начал свой путь в ноябре 2011 года как экспертный бьюти-дистрибьютор оригинальной американской косметики на платформе Avito. За годы безупречной работы мы заслужили репутацию надёжного партнёра, завоевав рейтинг 5.0 на основе десятков живых отзывов.
               </p>
@@ -1117,13 +901,13 @@ export default function App() {
       <section id="contact" className="py-20 md:py-28 bg-[#EDE6DB]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-12 gap-12">
-            
+
             {/* Contact details */}
             <div className="md:col-span-5 space-y-8 text-left">
               <div><span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest block">Contact Us</span><p className="text-[10px] text-[#A69C91] mt-1">Свяжитесь с нами</p></div>
               <h2 className="font-serif text-3xl sm:text-5xl font-light leading-tight">Мы на связи</h2>
               <div className="w-16 h-0.5 bg-[#C8A96D]"></div>
-              
+
               <p className="text-xs sm:text-sm text-[#4A4541] leading-relaxed">
                 Наши эксперты с удовольствием ответят на вопросы об уходе, помогут верифицировать батч-коды или оформят индивидуальный предзаказ из США. Напишите нам в мессенджеры для моментальной связи.
               </p>
@@ -1139,14 +923,14 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-lg">💬</span>
-                  <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="hover:text-[#229ED9] transition-colors font-semibold">@beautysupply (Telegram)</a>
+                  <a href={TELEGRAM_BOT} target="_blank" rel="noopener noreferrer" className="hover:text-[#229ED9] transition-colors font-semibold">@BEAUTYSUPPLYMSKBOT (Telegram-бот)</a>
                 </div>
               </div>
 
               {/* Direct Messenger Buttons */}
               <div className="flex gap-4 pt-4">
                 <a
-                  href="https://t.me/beautysupply"
+                  href={TELEGRAM_BOT}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3 bg-[#229ED9] hover:bg-[#168AC4] text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2 shadow-lg shadow-[#229ED9]/20"
@@ -1154,16 +938,16 @@ export default function App() {
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                   </svg>
-                  Telegram
+                  Telegram-бот
                 </a>
                 <a
-                  href={getWhatsAppLink()}
+                  href={TELEGRAM_CHANNEL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-[#25D366] hover:bg-[#1FB75A] text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2 shadow-lg shadow-[#25D366]/20"
+                  className="px-6 py-3 bg-[#1F1F1F] hover:bg-[#4A4541] text-white text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-2 shadow-lg shadow-black/10"
                 >
-                  <span aria-hidden="true" className="text-base leading-none">◔</span>
-                  WhatsApp
+                  <span aria-hidden="true" className="text-base leading-none">✈</span>
+                  Наш канал
                 </a>
               </div>
             </div>
@@ -1252,7 +1036,7 @@ export default function App() {
               Смотреть каталог
             </a>
             <a
-              href="https://t.me/beautysupply"
+              href={TELEGRAM_BOT}
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-[#1F1F1F] text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-300 hover:scale-105"
@@ -1267,23 +1051,23 @@ export default function App() {
       <footer className="bg-[#1F1F1F] text-[#A69C91] pt-16 pb-8 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left pb-16">
-            
+
             {/* Column 1: Identity */}
             <div className="space-y-4">
               <a href="#top" className="font-serif text-2xl font-bold tracking-wider text-white">BEAUTY SUPPLY</a>
               <p className="text-xs leading-relaxed text-[#A69C91]/80 mt-2">
                 Премиальный онлайн-магазин оригинальной уходовой и декоративной косметики из США. Основан в ноябре 2011 года на базе официального Avito-профиля.
               </p>
-              
+
               {/* Social icons */}
               <div className="flex gap-4 pt-2">
-                <a href="https://t.me/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#229ED9] hover:text-white flex items-center justify-center text-white transition-colors" aria-label="Telegram">
+                <a href={TELEGRAM_BOT} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#229ED9] hover:text-white flex items-center justify-center text-white transition-colors" aria-label="Telegram-бот">
                   TG
                 </a>
                 <a href="https://vk.com/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="VK">
                   VK
                 </a>
-                <a href="https://instagram.com/beautysupply" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="Instagram">
+                <a href="https://instagram.com/beautysupplymsk" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="Instagram">
                   IG
                 </a>
                 <a href="https://www.avito.ru/user/7d5cc17e554a6f4d901ec51bdd907f7b/profile" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#C8A96D] hover:text-[#1F1F1F] flex items-center justify-center text-white transition-colors" aria-label="Avito">
@@ -1367,7 +1151,7 @@ export default function App() {
             aria-labelledby="product-modal-title"
             className="relative w-full max-w-4xl bg-[#F7F4EF] rounded-3xl overflow-hidden shadow-2xl border border-[#EDE6DB] grid md:grid-cols-12 max-h-[90vh] overflow-y-auto"
           >
-            
+
             {/* Close button */}
             <button
               ref={productCloseRef}
@@ -1380,12 +1164,16 @@ export default function App() {
             </button>
 
             {/* Left side: Luxurious aesthetic photo frame */}
-            <div className={`md:col-span-5 bg-gradient-to-br ${selectedProduct.gradient} p-8 flex flex-col justify-between items-center relative min-h-[300px]`}>
+            <div className={`md:col-span-5 bg-gradient-to-br ${categoryGradient[selectedProduct.category]} p-8 flex flex-col justify-between items-center relative min-h-[300px]`}>
               <div className="w-full flex justify-between">
                 <span className="px-3 py-1 bg-white/90 rounded-full text-[9px] font-bold uppercase tracking-widest text-[#1F1F1F]">
                   Импорт из США
                 </span>
-                <span className="text-3xl">{selectedProduct.emoji}</span>
+                {selectedProduct.badge && (
+                  <span className="px-3 py-1 bg-[#1F1F1F]/80 text-white rounded-full text-[9px] font-bold uppercase tracking-widest">
+                    {selectedProduct.badge}
+                  </span>
+                )}
               </div>
 
               <div className="w-52 h-64 overflow-hidden bg-white/50 rounded-2xl shadow-xl border border-white/40">
@@ -1401,48 +1189,47 @@ export default function App() {
             {/* Right side: Deep e-commerce information */}
             <div className="md:col-span-7 p-8 sm:p-10 space-y-6 text-left">
               <div className="space-y-2">
-                <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">{selectedProduct.brand}</span>
-                <h2 id="product-modal-title" className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1F1F] leading-tight">{selectedProduct.name}</h2>
+                <span className="text-[#C8A96D] text-xs font-bold uppercase tracking-widest">{selectedProduct.brand} · {selectedProduct.line}</span>
+                <h2 id="product-modal-title" className="font-serif text-2xl sm:text-3xl font-semibold text-[#1F1F1F] leading-tight">{selectedProduct.ruName}</h2>
+                <p className="text-sm text-[#A69C91] italic">{selectedProduct.name}</p>
                 <div className="flex items-center gap-4">
-                  <span className="text-xl sm:text-2xl font-bold text-[#1F1F1F]">{formatPrice(selectedProduct.price)} ₽</span>
-                  {selectedProduct.isAvailable ? (
-                    <span className="text-xs px-2.5 py-0.5 bg-[#EDE6DB] text-[#4A4541] font-semibold uppercase tracking-wider rounded-full">В наличии в Москве</span>
-                  ) : (
-                    <span className="text-xs px-2.5 py-0.5 bg-[#E8D5CE] text-[#7A3B2E] font-semibold uppercase tracking-wider rounded-full">Под заказ из США</span>
-                  )}
+                  <span className="text-xl sm:text-2xl font-bold text-[#1F1F1F]">{formatPrice(selectedProduct.price)}</span>
+                  <span className="text-xs px-2.5 py-0.5 bg-[#EDE6DB] text-[#4A4541] font-semibold uppercase tracking-wider rounded-full">{selectedProduct.volume}</span>
+                  <span className="text-xs px-2.5 py-0.5 bg-[#E8D5CE] text-[#7A3B2E] font-semibold uppercase tracking-wider rounded-full">Уточнить наличие</span>
                 </div>
               </div>
 
-              {/* Concern mapping */}
+              {/* Summary */}
               <div className="bg-white/80 p-3.5 rounded-xl border border-[#EDE6DB] text-xs">
-                <span className="font-bold text-[#A69C91] uppercase tracking-wider block text-[9px] mb-1">Показание / Проблема кожи:</span>
-                <span className="font-medium text-[#1F1F1F]">{selectedProduct.concern}</span>
+                <span className="font-bold text-[#A69C91] uppercase tracking-wider block text-[9px] mb-1">О продукте:</span>
+                <span className="font-medium text-[#1F1F1F]">{selectedProduct.summary}</span>
               </div>
 
-              {/* Description */}
+              {/* Benefits */}
               <div className="space-y-2">
-                <h4 className="font-serif font-bold text-[#1F1F1F] border-b border-[#EDE6DB] pb-1">Описание продукта</h4>
-                <p className="text-xs sm:text-sm text-[#4A4541] leading-relaxed">{selectedProduct.details}</p>
+                <h4 className="font-serif font-bold text-[#1F1F1F] border-b border-[#EDE6DB] pb-1">Ключевые преимущества</h4>
+                <ul className="space-y-2">
+                  {selectedProduct.benefits.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-2 text-xs sm:text-sm text-[#4A4541] leading-relaxed">
+                      <span className="text-[#C8A96D] font-bold" aria-hidden="true">✦</span>
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              {/* Active ingredients */}
-              <div className="space-y-2">
-                <h4 className="font-serif font-bold text-[#1F1F1F] border-b border-[#EDE6DB] pb-1">Активные компоненты (INCI)</h4>
-                <p className="text-xs text-[#A69C91] leading-relaxed italic">{selectedProduct.ingredients}</p>
-              </div>
-
-              {/* Step by step usage */}
-              <div className="space-y-2">
-                <h4 className="font-serif font-bold text-[#1F1F1F] border-b border-[#EDE6DB] pb-1">Способ применения</h4>
-                <p className="text-xs sm:text-sm text-[#4A4541] leading-relaxed">{selectedProduct.usage}</p>
-              </div>
+              {/* Source link */}
+              <p className="text-[10px] text-[#A69C91] leading-relaxed">
+                Визуал создан на основе официального изображения продукта.{' '}
+                <a href={selectedProduct.source} target="_blank" rel="noopener noreferrer" className="text-[#C8A96D] hover:underline">Страница у бренда ↗</a>
+              </p>
 
               {/* CTA Orders block */}
               <div className="pt-4 border-t border-[#EDE6DB] space-y-3">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#A69C91]">Оформить заказ или проконсультироваться:</p>
                 <div className="grid gap-3">
                   <a
-                    href={getTelegramLink(selectedProduct.name, selectedProduct.price)}
+                    href={getOrderLink(selectedProduct, 'order')}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setSelectedProduct(null)}
@@ -1451,17 +1238,17 @@ export default function App() {
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                     </svg>
-                    Купить в Telegram
+                    Заказать в Telegram
                   </a>
                   <a
-                    href={getWhatsAppLink(selectedProduct.name)}
+                    href={getOrderLink(selectedProduct, 'consult')}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setSelectedProduct(null)}
-                    className="px-6 py-3.5 bg-[#25D366] hover:bg-[#1FB75A] text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20 transition-colors"
+                    className="px-6 py-3.5 border border-[#1F1F1F] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-[#F7F4EF] font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 transition-colors"
                   >
-                    <span aria-hidden="true" className="text-base leading-none">◔</span>
-                    Купить в WhatsApp
+                    <span aria-hidden="true" className="text-base leading-none">💬</span>
+                    Получить консультацию
                   </a>
                 </div>
               </div>
@@ -1488,7 +1275,7 @@ export default function App() {
             aria-labelledby="article-modal-title"
             className="relative w-full max-w-2xl bg-[#F7F4EF] rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl border border-[#EDE6DB] max-h-[90vh] overflow-y-auto text-left space-y-6"
           >
-            
+
             {/* Close button */}
             <button
               ref={articleCloseRef}
